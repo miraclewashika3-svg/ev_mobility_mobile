@@ -15,8 +15,12 @@ class SavingsSummary {
     // num.parse(...toString()) handles either case safely, rather than
     // assuming one specific type and crashing on the other.
     return SavingsSummary(
-      totalPetrolEquivalentKes: double.parse(json['total_petrol_equivalent_kes'].toString()),
-      totalActualCostKes: double.parse(json['total_actual_cost_kes'].toString()),
+      totalPetrolEquivalentKes: double.parse(
+        json['total_petrol_equivalent_kes'].toString(),
+      ),
+      totalActualCostKes: double.parse(
+        json['total_actual_cost_kes'].toString(),
+      ),
       totalSavingsKes: double.parse(json['total_savings_kes'].toString()),
     );
   }

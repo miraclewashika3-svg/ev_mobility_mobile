@@ -3,11 +3,7 @@ class SwapLog {
   final DateTime swappedAt;
   final double costKes;
 
-  SwapLog({
-    required this.id,
-    required this.swappedAt,
-    required this.costKes,
-  });
+  SwapLog({required this.id, required this.swappedAt, required this.costKes});
 
   factory SwapLog.fromJson(Map<String, dynamic> json) {
     return SwapLog(

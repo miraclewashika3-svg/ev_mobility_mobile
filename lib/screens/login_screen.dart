@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'home_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final ApiService apiService;
@@ -62,7 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFF1B8A4A)),
                     borderRadius: BorderRadius.circular(4),
@@ -108,7 +112,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(color: Color(0xFFB45309), fontSize: 13),
+                    style: const TextStyle(
+                      color: Color(0xFFB45309),
+                      fontSize: 13,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -125,6 +132,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     child: Text(_isSubmitting ? 'Signing in…' : 'Sign in'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: _isSubmitting
+                        ? null
+                        : () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  RegisterScreen(apiService: widget.apiService),
+                            ),
+                          ),
+                    child: const Text(
+                      "Don't have an account? Create one",
+                      style: TextStyle(color: Color(0xFF1B8A4A), fontSize: 13),
+                    ),
                   ),
                 ),
               ],

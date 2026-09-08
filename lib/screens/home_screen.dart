@@ -33,10 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       // IndexedStack keeps all three screens alive in memory, just hiding
       // the inactive ones — switching tabs doesn't re-trigger API calls.
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: screens,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
