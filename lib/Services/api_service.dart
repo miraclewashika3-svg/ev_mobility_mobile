@@ -1,15 +1,23 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:http/http.dart' as http;
 import '../models/station.dart';
 import '../models/bike.dart';
 import '../models/savings_summary.dart';
+import '../models/swap_log.dart';
 
 class ApiService {
-  // 10.0.2.2 is the Android emulator's special alias for the host machine's
-  // localhost — NOT a typo for 127.0.0.1. If testing on a real physical
-  // phone instead of the emulator, replace this with your laptop's actual
-  // local network IP (e.g. 192.168.x.x) so the phone can reach it over WiFi.
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  // The Android emulator can't see the host machine as "localhost" — it
+  // needs 10.0.2.2, its special alias for the host's loopback. Every other
+  // target this app builds for (Windows/macOS/Linux desktop, web, iOS
+  // simulator) runs on the host itself, so plain localhost is correct there.
+  // A real physical phone/tablet is the one case neither handles: point
+  // baseUrl at your laptop's LAN IP (e.g. 192.168.x.x) instead.
+  static String get baseUrl {
+    final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    final host = isAndroid ? '10.0.2.2' : 'localhost';
+    return 'http://$host:8000/api';
+  }
 
   String? _token;
 
@@ -83,6 +91,23 @@ class ApiService {
       return SavingsSummary.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to load savings summary');
+    }
+  }
+
+  // A bike's full swap history — the "rider-owned usage record" your
+  // pitch specifically differentiates on, shown newest-first since that's
+  // what a rider actually wants to see first.
+  Future<List<SwapLog>> getSwapLogsForBike(int bikeId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/bikes/$bikeId/swap-logs'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => SwapLog.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load swap history');
     }
   }
 }

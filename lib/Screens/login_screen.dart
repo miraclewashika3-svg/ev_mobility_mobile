@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await widget.apiService.login(
         _emailController.text.trim(),
-        _passwordController.text,
+        _passwordController.text.trim(),
       );
 
       if (!mounted) return;
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (error) {
       setState(() {
-        _errorMessage = 'Sign in failed. Check your email and password.';
+        _errorMessage = error.toString().replaceFirst('Exception: ', '');
       });
     } finally {
       if (mounted) {
@@ -100,6 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
+                  autocorrect: false,
+                  enableSuggestions: false,
                   decoration: const InputDecoration(labelText: 'Password'),
                 ),
                 if (_errorMessage != null) ...[

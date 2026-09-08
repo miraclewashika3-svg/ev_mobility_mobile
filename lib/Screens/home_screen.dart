@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'station_finder_screen.dart';
 import 'savings_screen.dart';
+import 'bike_profile_screen.dart';
 
-// HomeScreen wraps both post-login screens in a bottom tab bar, so the
-// rider can move between finding a station and checking their savings
-// without logging in again or losing their place.
+// HomeScreen wraps all three post-login screens in a bottom tab bar, so the
+// rider can move between finding a station, checking savings, and viewing
+// their bike/history without logging in again or losing their place.
 class HomeScreen extends StatefulWidget {
   final ApiService apiService;
 
@@ -26,11 +27,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final screens = [
       StationFinderScreen(apiService: widget.apiService),
       SavingsScreen(apiService: widget.apiService),
+      BikeProfileScreen(apiService: widget.apiService),
     ];
 
     return Scaffold(
-      // IndexedStack keeps both screens alive in memory, just hiding the
-      // inactive one — switching tabs doesn't re-trigger a fresh API call.
+      // IndexedStack keeps all three screens alive in memory, just hiding
+      // the inactive ones — switching tabs doesn't re-trigger API calls.
       body: IndexedStack(
         index: _selectedIndex,
         children: screens,
@@ -50,6 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.savings_outlined),
             label: 'Savings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.electric_moped_outlined),
+            label: 'My Bike',
           ),
         ],
       ),
