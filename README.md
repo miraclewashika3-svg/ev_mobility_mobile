@@ -82,6 +82,15 @@ screen.
 
 ## Deployment
 
+**Live:** https://ev-mobility-mobile.netlify.app
+
+Deployed as a web build to Netlify (free tier, no card required):
+
+```bash
+flutter build web --dart-define=API_BASE_URL=https://backend-production-10b9.up.railway.app/api
+netlify deploy --prod --dir=build/web --no-build
+```
+
 A native build needs a $25 one-time Google Play fee or a $99/year Apple
 developer account — both real costs this project deliberately avoids at
 this stage. Instead:
