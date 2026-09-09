@@ -8,6 +8,15 @@ import '../models/savings_summary.dart';
 import '../models/swap_log.dart';
 
 class ApiService {
+  // API_BASE_URL is a compile-time define — build with
+  // `flutter build web --dart-define=API_BASE_URL=https://your-app.up.railway.app/api`
+  // to point a deployed build at a deployed backend. Left unset (the
+  // default for `flutter run`/plain `flutter build`), this falls through
+  // to the local-development logic below.
+  static const String _apiBaseUrlOverride = String.fromEnvironment(
+    'API_BASE_URL',
+  );
+
   // The Android emulator can't see the host machine as "localhost" — it
   // needs 10.0.2.2, its special alias for the host's loopback. Every other
   // target this app builds for (Windows/macOS/Linux desktop, web, iOS
@@ -15,6 +24,10 @@ class ApiService {
   // A real physical phone/tablet is the one case neither handles: point
   // baseUrl at your laptop's LAN IP (e.g. 192.168.x.x) instead.
   static String get baseUrl {
+    if (_apiBaseUrlOverride.isNotEmpty) {
+      return _apiBaseUrlOverride;
+    }
+
     final isAndroid =
         !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
     final host = isAndroid ? '10.0.2.2' : 'localhost';
