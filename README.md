@@ -1,5 +1,7 @@
 # EV Mobility Platform — Rider App (Mobile)
 
+![Mobile Tests](https://github.com/miraclewashika3-svg/ev_mobility_mobile/actions/workflows/tests.yml/badge.svg)
+
 The rider-facing Flutter app for the EV Mobility Platform: find a swap
 station across every network, get one-tap directions, log a swap, and
 track real savings against petrol. Talks to the
