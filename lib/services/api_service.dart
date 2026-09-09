@@ -27,6 +27,19 @@ class ApiService {
     _token = token;
   }
 
+  bool get isLoggedIn => _token != null;
+
+  // Revokes the current token server-side, then clears it locally either
+  // way — if the token is already invalid/expired, the server call fails,
+  // but the rider still needs to be logged out of the app itself.
+  Future<void> logout() async {
+    try {
+      await http.post(Uri.parse('$baseUrl/logout'), headers: _headers);
+    } finally {
+      _token = null;
+    }
+  }
+
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

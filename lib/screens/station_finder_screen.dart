@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/station.dart';
 import '../services/api_service.dart';
 import 'log_swap_screen.dart';
+import 'login_screen.dart';
 
 class StationFinderScreen extends StatefulWidget {
   final ApiService apiService;
@@ -46,6 +47,18 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
     }
   }
 
+  Future<void> _handleLogout() async {
+    await widget.apiService.logout();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LoginScreen(apiService: widget.apiService),
+      ),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,6 +74,13 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
             fontSize: 18,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color(0xFF6B786F)),
+            tooltip: 'Sign out',
+            onPressed: _handleLogout,
+          ),
+        ],
       ),
       body: FutureBuilder<List<Station>>(
         future: _stationsFuture,

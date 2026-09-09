@@ -3,6 +3,7 @@ import '../models/bike.dart';
 import '../models/swap_log.dart';
 import '../services/api_service.dart';
 import 'add_bike_screen.dart';
+import 'login_screen.dart';
 
 class BikeProfileScreen extends StatefulWidget {
   final ApiService apiService;
@@ -72,6 +73,18 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
     return '${date.day} ${months[date.month - 1]}, $hour:$minute';
   }
 
+  Future<void> _handleLogout() async {
+    await widget.apiService.logout();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LoginScreen(apiService: widget.apiService),
+      ),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,6 +100,13 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
             fontSize: 18,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color(0xFF6B786F)),
+            tooltip: 'Sign out',
+            onPressed: _handleLogout,
+          ),
+        ],
       ),
       body: FutureBuilder<List<Bike>>(
         future: _bikesFuture,

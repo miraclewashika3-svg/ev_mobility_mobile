@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/bike.dart';
 import '../models/savings_summary.dart';
 import '../services/api_service.dart';
+import 'login_screen.dart';
 
 class SavingsScreen extends StatefulWidget {
   final ApiService apiService;
@@ -49,6 +50,18 @@ class _SavingsScreenState extends State<SavingsScreen> {
     return buffer.toString();
   }
 
+  Future<void> _handleLogout() async {
+    await widget.apiService.logout();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LoginScreen(apiService: widget.apiService),
+      ),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,6 +77,13 @@ class _SavingsScreenState extends State<SavingsScreen> {
             fontSize: 18,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color(0xFF6B786F)),
+            tooltip: 'Sign out',
+            onPressed: _handleLogout,
+          ),
+        ],
       ),
       body: FutureBuilder<List<Bike>>(
         future: _bikesFuture,
