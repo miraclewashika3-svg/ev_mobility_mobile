@@ -32,6 +32,11 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+/android/build/
+
+# Netlify CLI local site link (contains a site ID, not a secret, but is
+# machine-local state, not something to version)
+.netlify/
 
 # Symbolication related
 app.*.symbols
