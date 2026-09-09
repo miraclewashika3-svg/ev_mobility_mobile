@@ -6,6 +6,13 @@ void main() {
   runApp(const EvMobilityApp());
 }
 
+// A single ScaffoldMessenger that outlives any individual screen. Needed
+// because ResetPasswordScreen shows its "password reset" confirmation right
+// after navigating away from itself (back to Login) — a context-based
+// ScaffoldMessenger.of(context) call there would be tied to the screen
+// that's being removed from the tree, and the snackbar would vanish with it.
+final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 class EvMobilityApp extends StatelessWidget {
   const EvMobilityApp({super.key});
 
@@ -17,6 +24,7 @@ class EvMobilityApp extends StatelessWidget {
     final apiService = ApiService();
 
     return MaterialApp(
+      scaffoldMessengerKey: rootScaffoldMessengerKey,
       title: 'EV Mobility Platform',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

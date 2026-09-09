@@ -81,6 +81,49 @@ class ApiService {
     }
   }
 
+  // Requests a 6-digit reset code by email. The response is identical
+  // whether or not the email is registered — the server deliberately
+  // doesn't reveal that, so there's nothing rider-specific to return here.
+  Future<void> forgotPassword(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/forgot-password'),
+      headers: _headers,
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        _errorMessage(response, fallback: 'Could not request a reset code'),
+      );
+    }
+  }
+
+  // Verifies the code from forgotPassword() and sets a new password. On
+  // success, the server also revokes every existing token for this rider,
+  // so the caller still needs to log in again afterward.
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/reset-password'),
+      headers: _headers,
+      body: jsonEncode({
+        'email': email,
+        'code': code,
+        'password': password,
+        'password_confirmation': password,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        _errorMessage(response, fallback: 'Could not reset password'),
+      );
+    }
+  }
+
   // Pulls the first validation error Laravel reports (e.g. "This email is
   // already taken") rather than just its generic top-level message, so the
   // rider sees the actual reason their input was rejected.
