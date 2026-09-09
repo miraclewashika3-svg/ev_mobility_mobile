@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../models/station.dart';
 import '../services/api_service.dart';
+import '../utils/maps_launcher.dart';
 import 'log_swap_screen.dart';
 import 'login_screen.dart';
+
+// Nairobi CBD — used as the map's starting center before any stations have
+// loaded, and as a sane fallback if a rider's station list is ever empty.
+const LatLng _nairobiCenter = LatLng(-1.2864, 36.8172);
 
 class StationFinderScreen extends StatefulWidget {
   final ApiService apiService;
@@ -15,6 +22,7 @@ class StationFinderScreen extends StatefulWidget {
 
 class _StationFinderScreenState extends State<StationFinderScreen> {
   late Future<List<Station>> _stationsFuture;
+  bool _showMap = false;
 
   @override
   void initState() {
@@ -47,6 +55,103 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
     }
   }
 
+  Future<void> _handleGetDirections(Station station) async {
+    final opened = await openDirectionsTo(
+      latitude: station.latitude,
+      longitude: station.longitude,
+    );
+
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not open Google Maps on this device.'),
+        ),
+      );
+    }
+  }
+
+  // A station's details, reached the same way whether tapped from the list
+  // or from a map pin — one bottom sheet, one place to keep it consistent.
+  void _showStationSheet(Station station) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                station.stationName,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A2620),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                station.providerName,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF6B786F)),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'KES ${station.swapPriceKes.toStringAsFixed(0)} / swap',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFB45309),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        _handleGetDirections(station);
+                      },
+                      icon: const Icon(
+                        Icons.directions,
+                        color: Color(0xFF1B8A4A),
+                      ),
+                      label: const Text('Get directions'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1B8A4A),
+                        side: const BorderSide(color: Color(0xFF1B8A4A)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(sheetContext);
+                        _openLogSwapScreen(station);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1B8A4A),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Log a swap'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _handleLogout() async {
     await widget.apiService.logout();
     if (!mounted) return;
@@ -56,6 +161,43 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
         builder: (_) => LoginScreen(apiService: widget.apiService),
       ),
       (route) => false,
+    );
+  }
+
+  Widget _buildMapView(List<Station> stations) {
+    final center = stations.isNotEmpty
+        ? LatLng(stations.first.latitude, stations.first.longitude)
+        : _nairobiCenter;
+
+    return FlutterMap(
+      options: MapOptions(initialCenter: center, initialZoom: 12.5),
+      children: [
+        // OpenStreetMap tiles — free, no API key, no billing account. This
+        // is what makes the map itself possible at zero cost; Google Maps
+        // is used only for the one-tap "Get directions" hand-off below,
+        // via a plain URL, not the paid Maps SDK/Directions API.
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.evmobility.ev_mobility_mobile',
+        ),
+        MarkerLayer(
+          markers: stations.map((station) {
+            return Marker(
+              point: LatLng(station.latitude, station.longitude),
+              width: 40,
+              height: 40,
+              child: GestureDetector(
+                onTap: () => _showStationSheet(station),
+                child: const Icon(
+                  Icons.location_on,
+                  color: Color(0xFF1B8A4A),
+                  size: 40,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -75,6 +217,14 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Icon(
+              _showMap ? Icons.view_list : Icons.map_outlined,
+              color: const Color(0xFF6B786F),
+            ),
+            tooltip: _showMap ? 'Show list' : 'Show map',
+            onPressed: () => setState(() => _showMap = !_showMap),
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Color(0xFF6B786F)),
             tooltip: 'Sign out',
@@ -135,6 +285,10 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
             );
           }
 
+          if (_showMap) {
+            return _buildMapView(stations);
+          }
+
           return RefreshIndicator(
             color: const Color(0xFF1B8A4A),
             onRefresh: _handleRefresh,
@@ -190,6 +344,14 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
                                 ),
                               ],
                             ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.directions,
+                              color: Color(0xFF1B8A4A),
+                            ),
+                            tooltip: 'Get directions',
+                            onPressed: () => _handleGetDirections(station),
                           ),
                           const Icon(
                             Icons.chevron_right,
