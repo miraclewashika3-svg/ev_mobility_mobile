@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/api_service.dart';
+import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() {
@@ -40,7 +41,67 @@ class EvMobilityApp extends StatelessWidget {
           ),
         ),
       ),
-      home: LoginScreen(apiService: apiService),
+      // A rider who signed in previously shouldn't have to do it again just
+      // because the app was closed or Android killed it in the background —
+      // tryRestoreSession() checks the platform keystore for a token from a
+      // prior session before deciding which screen to open on.
+      home: FutureBuilder<bool>(
+        future: apiService.tryRestoreSession(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const _SessionCheckScreen();
+          }
+          return snapshot.data == true
+              ? HomeScreen(apiService: apiService)
+              : LoginScreen(apiService: apiService);
+        },
+      ),
+    );
+  }
+}
+
+// Shown for the brief moment it takes to check the platform keystore for a
+// saved session, on every single app launch — worth matching the rest of
+// the app's identity (the same "EV" mark every other screen opens with)
+// rather than a bare default spinner with no branding at all.
+class _SessionCheckScreen extends StatelessWidget {
+  const _SessionCheckScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7FAF7),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFF1B8A4A)),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'EV',
+                style: TextStyle(
+                  color: Color(0xFF1B8A4A),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.4,
+                color: Color(0xFF1B8A4A),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

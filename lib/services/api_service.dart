@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import '../models/station.dart';
 import '../models/bike.dart';
@@ -28,13 +29,55 @@ class ApiService {
     return _liveApiBaseUrl;
   }
 
+  static const _storage = FlutterSecureStorage();
+  static const _tokenKey = 'auth_token';
+
   String? _token;
 
-  void setToken(String token) {
+  // Persists to the platform keystore (Android Keystore / iOS Keychain via
+  // flutter_secure_storage), not just in-memory — without this, a rider had
+  // to sign in again every single time the app was closed or backgrounded
+  // long enough for Android to kill the process, which it does aggressively.
+  Future<void> setToken(String token) async {
     _token = token;
+    try {
+      await _storage.write(key: _tokenKey, value: token);
+      // ignore: avoid_print
+      print('DIAG: token write succeeded');
+    } catch (e) {
+      // ignore: avoid_print
+      print('DIAG: token write FAILED: $e');
+    }
   }
 
   bool get isLoggedIn => _token != null;
+
+  // Called once at app startup (see main.dart) to skip straight past the
+  // login screen if a token from a previous session is still on-device.
+  // Deliberately doesn't validate the token against the server here — an
+  // expired/revoked token just means the first real API call on HomeScreen
+  // fails normally, same as it would mid-session, rather than adding a
+  // network round-trip before the app can even show its first screen.
+  Future<bool> tryRestoreSession() async {
+    try {
+      // A timeout here isn't just test-environment defensiveness -- a real
+      // device's keystore can be slow to unlock right after boot, and the
+      // login screen falling back cleanly beats the whole app hanging on
+      // its very first frame.
+      final stored = await _storage
+          .read(key: _tokenKey)
+          .timeout(const Duration(seconds: 3));
+      // ignore: avoid_print
+      print('DIAG: read returned: ${stored == null ? "null" : "(${stored.length} chars)"}');
+      if (stored == null || stored.isEmpty) return false;
+      _token = stored;
+      return true;
+    } catch (e) {
+      // ignore: avoid_print
+      print('DIAG: read FAILED: $e');
+      return false;
+    }
+  }
 
   // Revokes the current token server-side, then clears it locally either
   // way — if the token is already invalid/expired, the server call fails,
@@ -44,6 +87,7 @@ class ApiService {
       await http.post(Uri.parse('$baseUrl/logout'), headers: _headers);
     } finally {
       _token = null;
+      await _storage.delete(key: _tokenKey);
     }
   }
 
@@ -63,7 +107,7 @@ class ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final token = data['token'] as String;
-      setToken(token);
+      await setToken(token);
       return token;
     } else {
       throw Exception(_errorMessage(response, fallback: 'Login failed'));
@@ -94,7 +138,7 @@ class ApiService {
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       final token = data['token'] as String;
-      setToken(token);
+      await setToken(token);
       return token;
     } else {
       throw Exception(_errorMessage(response, fallback: 'Registration failed'));
