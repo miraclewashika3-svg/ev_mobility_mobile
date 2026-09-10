@@ -1,4 +1,4 @@
-package com.example.ev_mobility_mobile
+package com.evmobility.rider
 
 import io.flutter.embedding.android.FlutterActivity
 
