@@ -60,10 +60,17 @@ credentials), or register a new one from the login screen.
 
 ## What's here
 
-Ten screens: Login, Register, Forgot/Reset Password, Station Finder (list
-**and** map view, with one-tap Google Maps directions to any station), Log
-a Swap, Add Bike, My Bike (profile + swap history), and Savings. Sign-out
-is reachable from every tab's app bar.
+Twelve screens: Login, Register, Forgot/Reset Password, Station Finder
+(list **and** map view, with one-tap Google Maps directions to any
+station), Log a Swap, Add Bike, My Bike (profile + swap history), Savings,
+Settings, and Help & support. Settings is reachable from every tab's app
+bar and is where Sign out now lives.
+
+**Settings** shows the rider's real profile (via `GET /me`), a functional
+"Stay signed in" toggle, Help & support, and About. **Help & support** is
+a real FAQ grounded in this app's actual product decisions (the savings
+formula, cross-network swaps, logging a swap after the fact) plus a
+working `mailto:` contact link.
 
 Every screen's data cache is kept alive across tab switches (so switching
 tabs doesn't re-trigger API calls), with pull-to-refresh on each tab so a
@@ -83,7 +90,7 @@ on a physical Redmi 12 5G.
 flutter test
 ```
 
-7 tests: all four model classes' JSON parsing (including Laravel's
+8 tests: all five model classes' JSON parsing (including Laravel's
 decimal-fields-as-strings quirk) and that the app boots to the login
 screen when no prior session exists.
 
