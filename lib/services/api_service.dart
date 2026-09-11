@@ -42,11 +42,9 @@ class ApiService {
     _token = token;
     try {
       await _storage.write(key: _tokenKey, value: token);
-      // ignore: avoid_print
-      print('DIAG: token write succeeded');
-    } catch (e) {
-      // ignore: avoid_print
-      print('DIAG: token write FAILED: $e');
+    } catch (_) {
+      // Falls back to in-memory-only for this session — the rider still
+      // gets a working session, just without persistence across restarts.
     }
   }
 
@@ -67,14 +65,10 @@ class ApiService {
       final stored = await _storage
           .read(key: _tokenKey)
           .timeout(const Duration(seconds: 3));
-      // ignore: avoid_print
-      print('DIAG: read returned: ${stored == null ? "null" : "(${stored.length} chars)"}');
       if (stored == null || stored.isEmpty) return false;
       _token = stored;
       return true;
-    } catch (e) {
-      // ignore: avoid_print
-      print('DIAG: read FAILED: $e');
+    } catch (_) {
       return false;
     }
   }
