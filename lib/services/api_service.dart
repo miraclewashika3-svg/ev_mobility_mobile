@@ -5,6 +5,7 @@ import '../models/station.dart';
 import '../models/bike.dart';
 import '../models/savings_summary.dart';
 import '../models/swap_log.dart';
+import '../models/rider.dart';
 
 class ApiService {
   // Defaults to the live production API so a plain `flutter run` / `flutter
@@ -31,6 +32,7 @@ class ApiService {
 
   static const _storage = FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
+  static const _persistSessionKey = 'persist_session';
 
   String? _token;
 
@@ -38,13 +40,40 @@ class ApiService {
   // flutter_secure_storage), not just in-memory — without this, a rider had
   // to sign in again every single time the app was closed or backgrounded
   // long enough for Android to kill the process, which it does aggressively.
+  // Skipped entirely when the rider has turned "Stay signed in" off in
+  // Settings, so that preference actually controls what gets written, not
+  // just what gets read back later.
   Future<void> setToken(String token) async {
     _token = token;
     try {
-      await _storage.write(key: _tokenKey, value: token);
+      if (await getPersistSessionPreference()) {
+        await _storage.write(key: _tokenKey, value: token);
+      }
     } catch (_) {
       // Falls back to in-memory-only for this session — the rider still
       // gets a working session, just without persistence across restarts.
+    }
+  }
+
+  // Defaults to true (the existing behavior) whenever the rider has never
+  // touched the setting, so this is purely additive for anyone who doesn't
+  // open Settings.
+  Future<bool> getPersistSessionPreference() async {
+    try {
+      final stored = await _storage.read(key: _persistSessionKey);
+      return stored != 'false';
+    } catch (_) {
+      return true;
+    }
+  }
+
+  // Turning this off doesn't just affect the *next* login -- it also
+  // forgets the current session immediately, so the toggle does what it
+  // says the moment it's flipped rather than only on the next app launch.
+  Future<void> setPersistSessionPreference(bool value) async {
+    await _storage.write(key: _persistSessionKey, value: value.toString());
+    if (!value) {
+      await _storage.delete(key: _tokenKey);
     }
   }
 
@@ -198,6 +227,19 @@ class ApiService {
       return data['message']?.toString() ?? fallback;
     } catch (_) {
       return fallback;
+    }
+  }
+
+  // The rider's own profile — used by Settings to show a real name/email
+  // instead of nothing, since login/register responses include this data
+  // but nothing in the app previously kept it around after the token.
+  Future<Rider> getMe() async {
+    final response = await http.get(Uri.parse('$baseUrl/me'), headers: _headers);
+
+    if (response.statusCode == 200) {
+      return Rider.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load profile');
     }
   }
 

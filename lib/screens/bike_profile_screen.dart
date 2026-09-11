@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/bike.dart';
 import '../models/swap_log.dart';
 import '../services/api_service.dart';
+import '../widgets/empty_state.dart';
 import 'add_bike_screen.dart';
-import 'login_screen.dart';
+import 'settings_screen.dart';
 
 class BikeProfileScreen extends StatefulWidget {
   final ApiService apiService;
@@ -73,15 +74,12 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
     return '${date.day} ${months[date.month - 1]}, $hour:$minute';
   }
 
-  Future<void> _handleLogout() async {
-    await widget.apiService.logout();
-    if (!mounted) return;
-    Navigator.pushAndRemoveUntil(
+  void _openSettings() {
+    Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => LoginScreen(apiService: widget.apiService),
+        builder: (_) => SettingsScreen(apiService: widget.apiService),
       ),
-      (route) => false,
     );
   }
 
@@ -102,9 +100,9 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Color(0xFF6B786F)),
-            tooltip: 'Sign out',
-            onPressed: _handleLogout,
+            icon: const Icon(Icons.settings_outlined, color: Color(0xFF6B786F)),
+            tooltip: 'Settings',
+            onPressed: _openSettings,
           ),
         ],
       ),
@@ -146,33 +144,14 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'No bike registered to your account yet.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Color(0xFF6B786F)),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _openAddBikeScreen,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1B8A4A),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                          child: const Text('Add your bike'),
-                        ),
-                      ],
-                    ),
+                  const SizedBox(height: 40),
+                  EmptyState(
+                    icon: Icons.electric_moped_outlined,
+                    title: 'No bike registered yet',
+                    message:
+                        'Add your bike to start logging swaps and tracking how much you\'re saving versus petrol.',
+                    actionLabel: 'Add your bike',
+                    onAction: _openAddBikeScreen,
                   ),
                 ],
               ),

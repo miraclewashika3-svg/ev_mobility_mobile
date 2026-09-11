@@ -5,7 +5,7 @@ import '../models/station.dart';
 import '../services/api_service.dart';
 import '../utils/maps_launcher.dart';
 import 'log_swap_screen.dart';
-import 'login_screen.dart';
+import 'settings_screen.dart';
 
 // Nairobi CBD — used as the map's starting center before any stations have
 // loaded, and as a sane fallback if a rider's station list is ever empty.
@@ -152,15 +152,12 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
     );
   }
 
-  Future<void> _handleLogout() async {
-    await widget.apiService.logout();
-    if (!mounted) return;
-    Navigator.pushAndRemoveUntil(
+  void _openSettings() {
+    Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => LoginScreen(apiService: widget.apiService),
+        builder: (_) => SettingsScreen(apiService: widget.apiService),
       ),
-      (route) => false,
     );
   }
 
@@ -226,9 +223,9 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
             onPressed: () => setState(() => _showMap = !_showMap),
           ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Color(0xFF6B786F)),
-            tooltip: 'Sign out',
-            onPressed: _handleLogout,
+            icon: const Icon(Icons.settings_outlined, color: Color(0xFF6B786F)),
+            tooltip: 'Settings',
+            onPressed: _openSettings,
           ),
         ],
       ),
