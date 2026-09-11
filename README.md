@@ -80,6 +80,13 @@ real swap networks use for their check-in flow. Native-camera feature —
 works on Android, not through the web build (a browser can't usefully
 scan a QR code being displayed on the same screen it's running on).
 
+A successful scan also records the rider's check-in with the backend
+immediately — before the swap itself is logged, and independent of
+whether it's ever completed. This is the accountability record behind a
+station visit: the rider's identity and arrival time are on file the
+moment they scan, whether or not the swap that follows is finished.
+Best-effort — a failed check-in request never blocks logging the swap.
+
 Every screen's data cache is kept alive across tab switches (so switching
 tabs doesn't re-trigger API calls), with pull-to-refresh on each tab so a
 swap logged from Stations shows up on My Bike/Savings without needing a
