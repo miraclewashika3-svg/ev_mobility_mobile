@@ -330,6 +330,22 @@ class ApiService {
     }
   }
 
+  // Records the rider's arrival at a station the instant they scan its QR
+  // code -- before the swap itself is logged, and independent of whether
+  // it ever is. This is the accountability record: the rider's name and
+  // arrival time are on file even if they walk away.
+  Future<void> checkInAtStation(int stationId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/swap-checkins'),
+      headers: _headers,
+      body: jsonEncode({'station_id': stationId}),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception(_errorMessage(response, fallback: 'Failed to check in'));
+    }
+  }
+
   // Records one swap event for a bike. Kept separate from createCostEntry
   // because a swap log (what happened, where, when) and a cost entry (the
   // savings-comparison figures) are two distinct models server-side.

@@ -66,6 +66,16 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
       return;
     }
 
+    // Best-effort: the check-in is an accountability record, not a
+    // requirement to proceed, so a failed request here (e.g. no signal at
+    // the station) never blocks the rider from still logging their swap.
+    try {
+      await widget.apiService.checkInAtStation(stationId);
+    } catch (_) {
+      // Nothing to show the rider — logging the swap itself still works.
+    }
+
+    if (!mounted) return;
     await _openLogSwapScreen(match);
   }
 
