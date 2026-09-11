@@ -5,6 +5,7 @@ import '../models/station.dart';
 import '../services/api_service.dart';
 import '../utils/maps_launcher.dart';
 import 'log_swap_screen.dart';
+import 'scan_station_screen.dart';
 import 'settings_screen.dart';
 
 // Nairobi CBD — used as the map's starting center before any stations have
@@ -35,6 +36,37 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
       _stationsFuture = widget.apiService.getStations();
     });
     await _stationsFuture;
+  }
+
+  // Scans a station's QR code and jumps straight to logging a swap there --
+  // the "tap and go" flow real swap networks use, instead of finding the
+  // station in a list by hand.
+  Future<void> _openScanStation() async {
+    final stationId = await Navigator.push<int>(
+      context,
+      MaterialPageRoute(builder: (_) => const ScanStationScreen()),
+    );
+
+    if (stationId == null || !mounted) return;
+
+    final stations = await _stationsFuture;
+    Station? match;
+    for (final s in stations) {
+      if (s.id == stationId) {
+        match = s;
+        break;
+      }
+    }
+
+    if (match == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('That station code isn\'t recognized.')),
+      );
+      return;
+    }
+
+    await _openLogSwapScreen(match);
   }
 
   Future<void> _openLogSwapScreen(Station station) async {
@@ -214,6 +246,14 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.qr_code_scanner_outlined,
+              color: Color(0xFF1B8A4A),
+            ),
+            tooltip: 'Scan station code',
+            onPressed: _openScanStation,
+          ),
           IconButton(
             icon: Icon(
               _showMap ? Icons.view_list : Icons.map_outlined,

@@ -60,17 +60,25 @@ credentials), or register a new one from the login screen.
 
 ## What's here
 
-Twelve screens: Login, Register, Forgot/Reset Password, Station Finder
+Thirteen screens: Login, Register, Forgot/Reset Password, Station Finder
 (list **and** map view, with one-tap Google Maps directions to any
-station), Log a Swap, Add Bike, My Bike (profile + swap history), Savings,
-Settings, and Help & support. Settings is reachable from every tab's app
-bar and is where Sign out now lives.
+station), Scan Station, Log a Swap, Add Bike, My Bike (profile + swap
+history), Savings, Settings, and Help & support. Settings is reachable
+from every tab's app bar and is where Sign out now lives.
 
 **Settings** shows the rider's real profile (via `GET /me`), a functional
 "Stay signed in" toggle, Help & support, and About. **Help & support** is
 a real FAQ grounded in this app's actual product decisions (the savings
 formula, cross-network swaps, logging a swap after the fact) plus a
 working `mailto:` contact link.
+
+**Scan Station.** A "tap and go" alternative to picking a station from
+the list — the camera icon in Station Finder opens a QR scanner
+(`mobile_scanner`); scanning a station's code jumps straight to Log a
+Swap for that exact station, skipping manual selection. Same pattern
+real swap networks use for their check-in flow. Native-camera feature —
+works on Android, not through the web build (a browser can't usefully
+scan a QR code being displayed on the same screen it's running on).
 
 Every screen's data cache is kept alive across tab switches (so switching
 tabs doesn't re-trigger API calls), with pull-to-refresh on each tab so a
