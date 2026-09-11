@@ -70,15 +70,22 @@ tabs doesn't re-trigger API calls), with pull-to-refresh on each tab so a
 swap logged from Stations shows up on My Bike/Savings without needing a
 restart.
 
+**Persistent login.** A rider who's already signed in stays signed in
+across app restarts and Android backgrounding the process — the auth
+token is saved to the platform keystore (`flutter_secure_storage`), not
+just an in-memory variable, so the app checks for a prior session on
+launch and skips straight to Home when one exists. Verified end-to-end
+on a physical Redmi 12 5G.
+
 ## Running tests
 
 ```bash
 flutter test
 ```
 
-Covers all four model classes' JSON parsing (including Laravel's
+7 tests: all four model classes' JSON parsing (including Laravel's
 decimal-fields-as-strings quirk) and that the app boots to the login
-screen.
+screen when no prior session exists.
 
 ## Deployment
 
