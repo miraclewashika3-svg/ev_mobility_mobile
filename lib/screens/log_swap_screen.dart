@@ -112,7 +112,7 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                   child: Text(
                     'Could not load your bike. Confirm the API server is running.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey.shade600),
+                    style: TextStyle(color: context.colors.inkMuted),
                   ),
                 ),
               );

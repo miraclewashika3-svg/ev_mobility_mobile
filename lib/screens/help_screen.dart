@@ -70,7 +70,7 @@ class HelpScreen extends StatelessWidget {
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.colors.surface,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: context.colors.border),
               ),

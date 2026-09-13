@@ -128,7 +128,7 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                     child: Text(
                       'Could not load your bike. Confirm the API server is running.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: TextStyle(color: context.colors.inkMuted),
                     ),
                   ),
                 ],
@@ -181,7 +181,7 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colors.surface,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: context.colors.border),
                   ),
@@ -308,7 +308,7 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: context.colors.surface,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: context.colors.border),
                           ),

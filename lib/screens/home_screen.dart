@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: (index) => setState(() => _selectedIndex = index),
         selectedItemColor: context.colors.accent,
         unselectedItemColor: context.colors.inkMuted,
-        backgroundColor: Colors.white,
+        backgroundColor: context.colors.surface,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(

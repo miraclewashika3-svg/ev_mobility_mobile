@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 // A first-run empty screen should read as onboarding, not as "nothing
 // here" -- an icon, a real headline, and one clear action, instead of a
@@ -33,11 +34,11 @@ class EmptyState extends StatelessWidget {
               Container(
                 width: 96,
                 height: 96,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE1F3EA),
+                decoration: BoxDecoration(
+                  color: context.colors.accentSurface,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 42, color: const Color(0xFF1B8A4A)),
+                child: Icon(icon, size: 42, color: context.colors.accent),
               ),
               Positioned(
                 right: 6,
@@ -45,8 +46,8 @@ class EmptyState extends StatelessWidget {
                 child: Container(
                   width: 26,
                   height: 26,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF1B8A4A),
+                  decoration: BoxDecoration(
+                    color: context.colors.accent,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.bolt, size: 15, color: Colors.white),
@@ -58,19 +59,19 @@ class EmptyState extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1A2620),
+              color: context.colors.ink,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: Color(0xFF6B786F),
+              color: context.colors.inkMuted,
               height: 1.5,
             ),
           ),
@@ -79,7 +80,7 @@ class EmptyState extends StatelessWidget {
             ElevatedButton(
               onPressed: onAction,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1B8A4A),
+                backgroundColor: context.colors.accent,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,

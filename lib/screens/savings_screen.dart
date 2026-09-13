@@ -104,7 +104,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     child: Text(
                       'Could not load your bikes. Confirm the API server is running.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: TextStyle(color: context.colors.inkMuted),
                     ),
                   ),
                 ],
@@ -155,7 +155,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colors.surface,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: context.colors.border),
                   ),

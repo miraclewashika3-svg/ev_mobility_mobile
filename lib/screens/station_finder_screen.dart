@@ -324,7 +324,7 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
                     child: Text(
                       'Could not load stations. Confirm the API server is running.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: TextStyle(color: context.colors.inkMuted),
                     ),
                   ),
                 ],
@@ -368,7 +368,7 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
               itemBuilder: (context, index) {
                 final station = stations[index];
                 return Material(
-                  color: Colors.white,
+                  color: context.colors.surface,
                   borderRadius: BorderRadius.circular(10),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(10),
