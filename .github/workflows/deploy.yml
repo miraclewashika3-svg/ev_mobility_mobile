@@ -1,0 +1,36 @@
+name: Deploy web build to Cloudflare Workers
+
+# Same gap as the fleet console: this Worker was only ever deployed by hand
+# with `wrangler deploy` from someone's machine, never wired to this repo's
+# GitHub history. main -> tests -> flutter build web -> deploy, automatically.
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run test suite
+        run: flutter test
+
+      - name: Build web
+        run: flutter build web --dart-define=API_BASE_URL=https://backend-production-10b9.up.railway.app/api
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 068302c7cbaa13913a4545dfdae39e35
+          command: deploy
