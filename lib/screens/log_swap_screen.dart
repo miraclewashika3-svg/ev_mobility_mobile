@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/bike.dart';
+import '../models/payment.dart';
 import '../models/station.dart';
 import '../services/api_service.dart';
 import 'add_bike_screen.dart';
@@ -14,11 +15,13 @@ const double _freeSwapPetrolEquivalentKes = 430;
 class LogSwapScreen extends StatefulWidget {
   final ApiService apiService;
   final Station station;
+  final Payment payment;
 
   const LogSwapScreen({
     super.key,
     required this.apiService,
     required this.station,
+    required this.payment,
   });
 
   @override
@@ -27,7 +30,6 @@ class LogSwapScreen extends StatefulWidget {
 
 class _LogSwapScreenState extends State<LogSwapScreen> {
   late Future<List<Bike>> _bikesFuture;
-  late final TextEditingController _costController;
   bool _isSubmitting = false;
   String? _errorMessage;
 
@@ -35,30 +37,16 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
   void initState() {
     super.initState();
     _bikesFuture = widget.apiService.getBikes();
-    _costController = TextEditingController(
-      text: widget.station.swapPriceKes.toStringAsFixed(0),
-    );
-  }
-
-  @override
-  void dispose() {
-    _costController.dispose();
-    super.dispose();
   }
 
   Future<void> _handleLogSwap(Bike bike) async {
-    final cost = double.tryParse(_costController.text.trim());
-    if (cost == null || cost < 0) {
-      setState(() => _errorMessage = 'Enter a valid swap cost.');
-      return;
-    }
-
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
     });
 
     final now = DateTime.now();
+    final cost = widget.payment.amountKes;
     final petrolEquivalent = cost > 0
         ? double.parse((cost * _petrolEquivalentMultiplier).toStringAsFixed(2))
         : _freeSwapPetrolEquivalentKes;
@@ -67,8 +55,8 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
       await widget.apiService.createSwapLog(
         bikeId: bike.id,
         stationId: widget.station.id,
+        paymentId: widget.payment.id,
         swappedAt: now,
-        costKes: cost,
       );
       await widget.apiService.createCostEntry(
         bikeId: bike.id,
@@ -195,15 +183,45 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  TextField(
-                    controller: _costController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2F0E6),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Amount paid (KES)',
-                      helperText:
-                          'Pre-filled with this station\'s listed price — adjust if different',
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFF1B8A4A),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Paid KES ${widget.payment.amountKes.toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF0F5C30),
+                                ),
+                              ),
+                              if (widget.payment.providerReference != null)
+                                Text(
+                                  'Ref ${widget.payment.providerReference}',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: Color(0xFF4C7A56),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   if (_errorMessage != null) ...[

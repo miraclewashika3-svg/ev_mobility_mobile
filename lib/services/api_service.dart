@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import '../models/station.dart';
 import '../models/bike.dart';
+import '../models/payment.dart';
 import '../models/savings_summary.dart';
 import '../models/swap_log.dart';
 import '../models/rider.dart';
@@ -346,14 +347,57 @@ class ApiService {
     }
   }
 
-  // Records one swap event for a bike. Kept separate from createCostEntry
-  // because a swap log (what happened, where, when) and a cost entry (the
-  // savings-comparison figures) are two distinct models server-side.
+  // Starts a payment for a swap at the given station. The amount is never
+  // sent by the client -- the server reads it straight off the station's
+  // own price, so there's nothing here for a client to get wrong (or fake).
+  // `method` on the returned Payment is always 'simulated' for now; see
+  // PaymentScreen for what that means for the rider.
+  Future<Payment> startPayment({
+    required int stationId,
+    int? swapCheckinId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/payments'),
+      headers: _headers,
+      body: jsonEncode({
+        'station_id': stationId,
+        if (swapCheckinId != null) 'swap_checkin_id': swapCheckinId,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      return Payment.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception(_errorMessage(response, fallback: 'Failed to start payment'));
+    }
+  }
+
+  // Confirms a pending payment -- stands in for what a real gateway's own
+  // callback would do (e.g. M-Pesa's Daraja STK push confirmation) until
+  // one is wired in server-side. See docs/FUTURE_CONSIDERATIONS.md in the
+  // backend repo.
+  Future<Payment> confirmPayment(int paymentId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/payments/$paymentId/confirm'),
+      headers: _headers,
+    );
+
+    if (response.statusCode == 200) {
+      return Payment.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception(_errorMessage(response, fallback: 'Failed to confirm payment'));
+    }
+  }
+
+  // Records one swap event for a bike. paymentId must reference the rider's
+  // own completed, unused payment for this station -- the server derives
+  // cost_kes from that payment rather than trusting a client-supplied
+  // number (see StoreSwapLogRequest / SwapLogController on the backend).
   Future<SwapLog> createSwapLog({
     required int bikeId,
     required int stationId,
+    required int paymentId,
     required DateTime swappedAt,
-    required double costKes,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/swap-logs'),
@@ -361,13 +405,13 @@ class ApiService {
       body: jsonEncode({
         'bike_id': bikeId,
         'station_id': stationId,
+        'payment_id': paymentId,
         // .toUtc() first: a local DateTime's toIso8601String() has no "Z"
         // suffix, so Laravel parses it as if it were already UTC — in any
         // timezone ahead of UTC that reads as a future timestamp and fails
         // the "before_or_equal:now" validation even for the actual current
         // moment.
         'swapped_at': swappedAt.toUtc().toIso8601String(),
-        'cost_kes': costKes,
       }),
     );
 

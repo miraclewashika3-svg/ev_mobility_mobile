@@ -60,11 +60,22 @@ credentials), or register a new one from the login screen.
 
 ## What's here
 
-Thirteen screens: Login, Register, Forgot/Reset Password, Station Finder
+Fourteen screens: Login, Register, Forgot/Reset Password, Station Finder
 (list **and** map view, with one-tap Google Maps directions to any
-station), Scan Station, Log a Swap, Add Bike, My Bike (profile + swap
-history), Savings, Settings, and Help & support. Settings is reachable
-from every tab's app bar and is where Sign out now lives.
+station), Scan Station, Pay for Swap, Log a Swap, Add Bike, My Bike
+(profile + swap history), Savings, Settings, and Help & support. Settings
+is reachable from every tab's app bar and is where Sign out now lives.
+
+**Pay for Swap.** Sits between picking a station and logging a swap — a
+swap can't be logged without a completed payment (the backend enforces
+this, not just the UI). The amount is always the station's own listed
+price, never something the rider types in. `method` is `'simulated'`:
+there's no live payment gateway account behind this yet, and the screen
+says so in an explicit on-screen badge rather than pretending otherwise.
+See the backend repo's `docs/FUTURE_CONSIDERATIONS.md` for what wiring in
+a real gateway (e.g. M-Pesa's Daraja STK push) would change — the payment
+model, the swap-log gating, and this screen's flow all stay the same;
+only what confirms a payment changes.
 
 **Settings** shows the rider's real profile (via `GET /me`), a functional
 "Stay signed in" toggle, Help & support, and About. **Help & support** is

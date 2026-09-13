@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../models/payment.dart';
 import '../models/station.dart';
 import '../services/api_service.dart';
 import '../utils/maps_launcher.dart';
 import 'log_swap_screen.dart';
+import 'payment_screen.dart';
 import 'scan_station_screen.dart';
 import 'settings_screen.dart';
 
@@ -76,15 +78,34 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
     }
 
     if (!mounted) return;
-    await _openLogSwapScreen(match);
+    await _openPaymentThenLogSwap(match);
   }
 
-  Future<void> _openLogSwapScreen(Station station) async {
-    final wasLogged = await Navigator.push<bool>(
+  // Payment always comes first now -- a swap can't be logged without a
+  // completed one, so there's nothing to gain by letting a rider reach
+  // LogSwapScreen without paying first.
+  Future<void> _openPaymentThenLogSwap(Station station) async {
+    final payment = await Navigator.push<Payment>(
       context,
       MaterialPageRoute(
         builder: (_) =>
-            LogSwapScreen(apiService: widget.apiService, station: station),
+            PaymentScreen(apiService: widget.apiService, station: station),
+      ),
+    );
+
+    if (payment == null || !mounted) return;
+    await _openLogSwapScreen(station, payment);
+  }
+
+  Future<void> _openLogSwapScreen(Station station, Payment payment) async {
+    final wasLogged = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LogSwapScreen(
+          apiService: widget.apiService,
+          station: station,
+          payment: payment,
+        ),
       ),
     );
 
@@ -175,7 +196,7 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(sheetContext);
-                        _openLogSwapScreen(station);
+                        _openPaymentThenLogSwap(station);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1B8A4A),
@@ -350,7 +371,7 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
                   borderRadius: BorderRadius.circular(10),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(10),
-                    onTap: () => _openLogSwapScreen(station),
+                    onTap: () => _openPaymentThenLogSwap(station),
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
