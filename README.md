@@ -60,11 +60,26 @@ credentials), or register a new one from the login screen.
 
 ## What's here
 
-Fourteen screens: Login, Register, Forgot/Reset Password, Station Finder
+Fifteen screens: Login, Register, Forgot/Reset Password, Station Finder
 (list **and** map view, with one-tap Google Maps directions to any
 station), Scan Station, Pay for Swap, Log a Swap, Add Bike, My Bike
-(profile + swap history), Savings, Settings, and Help & support. Settings
-is reachable from every tab's app bar and is where Sign out now lives.
+(profile + swap history), Savings, Settings, Change Password, and Help &
+support. Settings is reachable from every tab's app bar and is where Sign
+out now lives.
+
+**Light/dark theme.** A real `ThemeExtension`-backed theme, not just a
+system default follow — toggled from Settings, persisted across restarts
+via `flutter_secure_storage`, and applied consistently across every
+screen (cards, nav bar, empty states) rather than a partial pass that
+leaves some surfaces stuck in light mode.
+
+**More than one bike.** The backend has always allowed unlimited bikes
+per rider; the UI now actually exposes it. My Bike's app bar can always
+add another bike (not just from the empty state), and a chip selector
+appears — on My Bike and on Log a Swap — the moment there's more than
+one to choose between, so a rider with a growing fleet can view any
+bike's own profile/history and pick exactly which bike a swap counts
+against, without cluttering the common single-bike case.
 
 **Pay for Swap.** Sits between picking a station and logging a swap — a
 swap can't be logged without a completed payment (the backend enforces
@@ -75,12 +90,16 @@ says so in an explicit on-screen badge rather than pretending otherwise.
 See the backend repo's `docs/FUTURE_CONSIDERATIONS.md` for what wiring in
 a real gateway (e.g. M-Pesa's Daraja STK push) would change — the payment
 model, the swap-log gating, and this screen's flow all stay the same;
-only what confirms a payment changes.
+only what confirms a payment changes. **Log a Swap** also has a
+date/time picker (defaulting to now, editable back to 90 days) — the
+same "you can pick any past date and time" Help & support has always
+told riders, for a swap they forgot to log at the time.
 
 **Settings** shows the rider's real profile (via `GET /me`), a functional
-"Stay signed in" toggle, Help & support, and About. **Help & support** is
-a real FAQ grounded in this app's actual product decisions (the savings
-formula, cross-network swaps, logging a swap after the fact) plus a
+"Stay signed in" toggle, a dark mode toggle, Change Password, Help &
+support, and About. **Help & support** is a real FAQ grounded in this
+app's actual product decisions (the savings formula, cross-network swaps,
+logging a swap after the fact) plus a
 working `mailto:` contact link.
 
 **Scan Station.** A "tap and go" alternative to picking a station from
