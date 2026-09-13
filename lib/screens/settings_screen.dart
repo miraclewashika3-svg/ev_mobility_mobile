@@ -22,10 +22,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _biometricAuth = BiometricAuthService();
   bool _persistSession = true;
   bool _biometricUnlock = false;
-  // Null while checking; only ever shows the toggle once this is true --
-  // a device with no fingerprint/face enrolled never sees an option that
-  // would only ever fail.
-  bool _biometricAvailable = false;
+  // Shown on any biometric-capable device, whether or not a fingerprint/
+  // face is enrolled yet -- the same "show it, explain what's missing"
+  // approach high-level apps take, rather than hiding the option outright.
+  // Only a device with no biometric sensor at all never sees the toggle.
+  bool _biometricSupported = false;
 
   @override
   void initState() {
@@ -34,10 +35,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     widget.apiService.getPersistSessionPreference().then((value) {
       if (mounted) setState(() => _persistSession = value);
     });
-    _biometricAuth.isAvailable().then((available) {
+    _biometricAuth.isSupported().then((supported) {
       if (!mounted) return;
-      setState(() => _biometricAvailable = available);
-      if (available) {
+      setState(() => _biometricSupported = supported);
+      if (supported) {
         widget.apiService.getBiometricUnlockPreference().then((value) {
           if (mounted) setState(() => _biometricUnlock = value);
         });
@@ -52,7 +53,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // them out of an app they just successfully opened.
     if (enabled) {
       final confirmed = await _biometricAuth.authenticate();
-      if (!confirmed) return;
+      if (!confirmed) {
+        if (!mounted) return;
+        // Distinguishes "nothing enrolled yet" from a plain cancel -- no
+        // app, this one included, can add a fingerprint on a rider's
+        // behalf, so the one thing worth telling them is where to go do
+        // it themselves.
+        final hasEnrolled = await _biometricAuth.hasEnrolledBiometrics();
+        if (!hasEnrolled && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'No fingerprint or face set up on this device yet. '
+                'Add one in your phone\'s Settings, then try again.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
     }
     setState(() => _biometricUnlock = enabled);
     await widget.apiService.setBiometricUnlockPreference(enabled);
@@ -249,7 +268,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
           ),
-          if (_biometricAvailable)
+          if (_biometricSupported)
             SwitchListTile(
               value: _biometricUnlock,
               onChanged: _toggleBiometricUnlock,

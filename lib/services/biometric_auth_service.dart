@@ -9,16 +9,26 @@ import 'package:local_auth/local_auth.dart';
 class BiometricAuthService {
   final LocalAuthentication _auth = LocalAuthentication();
 
-  // Whether this device can even prompt for biometrics right now -- no
-  // enrolled fingerprint/face, or hardware that doesn't support it, both
-  // land here. Checked before ever showing the Settings toggle, so a rider
-  // on a device without biometrics never sees an option that would only
-  // ever fail.
-  Future<bool> isAvailable() async {
+  // Whether this hardware supports biometrics *at all* -- true regardless
+  // of whether a fingerprint/face is actually enrolled yet, the same way
+  // high-level apps (banking apps, Google) show the option on capable
+  // hardware and explain what's missing rather than hiding it outright.
+  // Only a device with no biometric sensor at all never sees the toggle.
+  Future<bool> isSupported() async {
     try {
-      final canCheck = await _auth.canCheckBiometrics;
-      final isSupported = await _auth.isDeviceSupported();
-      return canCheck && isSupported;
+      return await _auth.isDeviceSupported();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // True only once something is actually enrolled at the OS level -- no
+  // app, this one included, can ever capture or save a fingerprint itself;
+  // enrollment only ever happens in the phone's own Settings. This is what
+  // separates "the toggle exists but needs setup first" from "it's ready."
+  Future<bool> hasEnrolledBiometrics() async {
+    try {
+      return await _auth.canCheckBiometrics;
     } catch (_) {
       return false;
     }

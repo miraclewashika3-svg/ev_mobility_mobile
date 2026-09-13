@@ -40,8 +40,14 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!widget.apiService.isLoggedIn) return;
     final enabled = await widget.apiService.getBiometricUnlockPreference();
     if (!enabled) return;
-    final available = await _biometricAuth.isAvailable();
-    if (mounted) setState(() => _showBiometricOption = available);
+    // hasEnrolledBiometrics, not just isSupported -- the preference can
+    // only ever have been switched on from Settings after a successful
+    // authenticate() there, which itself required something enrolled. If a
+    // rider later removes every fingerprint from their phone's own
+    // Settings, this button should quietly stop appearing rather than
+    // offering something that would only ever fail.
+    final ready = await _biometricAuth.hasEnrolledBiometrics();
+    if (mounted) setState(() => _showBiometricOption = ready);
   }
 
   Future<void> _handleBiometricLogin() async {
