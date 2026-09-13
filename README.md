@@ -99,9 +99,11 @@ moment they scan, whether or not the swap that follows is finished.
 Best-effort — a failed check-in request never blocks logging the swap.
 
 Every screen's data cache is kept alive across tab switches (so switching
-tabs doesn't re-trigger API calls), with pull-to-refresh on each tab so a
-swap logged from Stations shows up on My Bike/Savings without needing a
-restart.
+tabs doesn't re-trigger API calls). Pull-to-refresh re-fetches on demand,
+and a shared `DataRefreshSignal` also refetches My Bike and Savings
+automatically the moment a swap is logged from Stations — no manual
+refresh needed, even while those tabs are sitting inactive behind the
+tab bar.
 
 **Persistent login.** A rider who's already signed in stays signed in
 across app restarts and Android backgrounding the process — the auth
@@ -116,19 +118,25 @@ on a physical Redmi 12 5G.
 flutter test
 ```
 
-8 tests: all five model classes' JSON parsing (including Laravel's
-decimal-fields-as-strings quirk) and that the app boots to the login
-screen when no prior session exists.
+14 tests: all five model classes' JSON parsing (including Laravel's
+decimal-fields-as-strings quirk), the light/dark theme and its
+Settings-driven toggle, the shared DataRefreshSignal, and that the app
+boots to the login screen when no prior session exists.
 
 ## Deployment
 
-**Live:** https://ev-mobility-mobile.netlify.app
+**Live:** https://ev-mobility-mobile.ev-mobility-mobile.workers.dev
 
-Deployed as a web build to Netlify (free tier, no card required):
+Deployed as a web build to Cloudflare Workers. `.github/workflows/deploy.yml`
+redeploys automatically on every push to `main` — provided the repo's
+`CLOUDFLARE_API_TOKEN` secret (Settings → Secrets and variables →
+Actions) is a valid token with Workers Scripts edit permission for the
+account. To deploy by hand instead (e.g. while that secret is missing
+or invalid):
 
 ```bash
 flutter build web --dart-define=API_BASE_URL=https://backend-production-10b9.up.railway.app/api
-netlify deploy --prod --dir=build/web --no-build
+npx wrangler deploy
 ```
 
 A native build needs a $25 one-time Google Play fee or a $99/year Apple
