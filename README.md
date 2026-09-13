@@ -96,11 +96,24 @@ same "you can pick any past date and time" Help & support has always
 told riders, for a swap they forgot to log at the time.
 
 **Settings** shows the rider's real profile (via `GET /me`), a functional
-"Stay signed in" toggle, a dark mode toggle, Change Password, Help &
-support, and About. **Help & support** is a real FAQ grounded in this
-app's actual product decisions (the savings formula, cross-network swaps,
-logging a swap after the fact) plus a
-working `mailto:` contact link.
+"Stay signed in" toggle, a dark mode toggle, a "Require fingerprint to
+unlock" toggle (only shown on a device with biometric hardware enrolled),
+Change Password, Help & support, and About. **Help & support** is a real
+FAQ grounded in this app's actual product decisions (the savings formula,
+cross-network swaps, logging a swap after the fact) plus a working
+`mailto:` contact link.
+
+**Biometric unlock.** A fingerprint never reaches the backend and isn't a
+new server-side auth method — it's a local gate (`local_auth`) in front
+of the session token already sitting in the platform keystore. Two entry
+points: the launch-time session restore in `main.dart` prompts
+automatically when the Settings toggle is on, and a **"Sign in with
+fingerprint"** button on the Login screen itself offers it as an explicit
+alternative to typing a password whenever a restored session is waiting
+to be confirmed. A rider without enrolled biometrics never sees either —
+this is additive, and the email/password flow is untouched. See the
+backend repo's `docs/FUTURE_CONSIDERATIONS.md` §5 for where this goes
+next (biometric confirmation on sensitive actions, passkeys/WebAuthn).
 
 **Scan Station.** A "tap and go" alternative to picking a station from
 the list — the camera icon in Station Finder opens a QR scanner

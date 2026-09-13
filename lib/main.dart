@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/api_service.dart';
+import 'services/biometric_auth_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'theme/app_colors.dart';
@@ -17,6 +18,22 @@ void main() {
 // that's being removed from the tree, and the snackbar would vanish with it.
 final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
+// A stored session only actually unlocks the app if biometric unlock is
+// off, or it's on and the prompt succeeds -- a fingerprint gate in front
+// of the token, not a replacement for it. A rider who cancels or fails
+// the prompt lands on the normal login screen, same as having no stored
+// session at all, never a dead end: the token itself is untouched and
+// still there next launch.
+Future<bool> _resolveStartupSession(ApiService apiService) async {
+  final hasSession = await apiService.tryRestoreSession();
+  if (!hasSession) return false;
+
+  final biometricRequired = await apiService.getBiometricUnlockPreference();
+  if (!biometricRequired) return true;
+
+  return BiometricAuthService().authenticate();
+}
+
 class EvMobilityApp extends StatelessWidget {
   const EvMobilityApp({super.key});
 
@@ -32,7 +49,7 @@ class EvMobilityApp extends StatelessWidget {
     // re-trigger the whole session-restore check (and briefly show the
     // splash screen again) every single time, since the builder reruns on
     // every theme change.
-    final sessionFuture = apiService.tryRestoreSession();
+    final sessionFuture = _resolveStartupSession(apiService);
 
     // themeController is a top-level singleton (see theme_controller.dart),
     // so this ValueListenableBuilder is the one place in the app that reacts

@@ -1,5 +1,8 @@
 package com.evmobility.rider
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FlutterFragmentActivity, not FlutterActivity -- local_auth's Android
+// implementation shows the biometric prompt via a Fragment, which requires
+// the host Activity to be a FragmentActivity.
+class MainActivity : FlutterFragmentActivity()

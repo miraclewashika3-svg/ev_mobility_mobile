@@ -34,6 +34,7 @@ class ApiService {
   static const _storage = FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
   static const _persistSessionKey = 'persist_session';
+  static const _biometricUnlockKey = 'biometric_unlock_enabled';
 
   String? _token;
 
@@ -76,6 +77,23 @@ class ApiService {
     if (!value) {
       await _storage.delete(key: _tokenKey);
     }
+  }
+
+  // Defaults to false (opt-in) -- unlike "stay signed in," which is a safe
+  // default for anyone who's never touched Settings, requiring a fingerprint
+  // to unlock is a rider's deliberate choice to make, not something sprung
+  // on them silently.
+  Future<bool> getBiometricUnlockPreference() async {
+    try {
+      final stored = await _storage.read(key: _biometricUnlockKey);
+      return stored == 'true';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> setBiometricUnlockPreference(bool value) async {
+    await _storage.write(key: _biometricUnlockKey, value: value.toString());
   }
 
   bool get isLoggedIn => _token != null;

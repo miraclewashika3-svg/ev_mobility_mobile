@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/biometric_auth_service.dart';
 import 'forgot_password_screen.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
@@ -17,8 +18,42 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _biometricAuth = BiometricAuthService();
   bool _isSubmitting = false;
   String? _errorMessage;
+  // Only ever true when there's an actual session to unlock -- a restored
+  // token already sitting in apiService from tryRestoreSession() at launch
+  // (see main.dart), with the rider's own "require fingerprint" preference
+  // on. A rider who has never logged in, or who signed out, has no token
+  // to unlock, so this stays false and the button never appears -- a
+  // fingerprint can confirm an existing session, never substitute for the
+  // first real sign-in.
+  bool _showBiometricOption = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricOption();
+  }
+
+  Future<void> _checkBiometricOption() async {
+    if (!widget.apiService.isLoggedIn) return;
+    final enabled = await widget.apiService.getBiometricUnlockPreference();
+    if (!enabled) return;
+    final available = await _biometricAuth.isAvailable();
+    if (mounted) setState(() => _showBiometricOption = available);
+  }
+
+  Future<void> _handleBiometricLogin() async {
+    final success = await _biometricAuth.authenticate();
+    if (!success || !mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HomeScreen(apiService: widget.apiService),
+      ),
+    );
+  }
 
   Future<void> _handleLogin() async {
     setState(() {
@@ -155,6 +190,46 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(_isSubmitting ? 'Signing in…' : 'Sign in'),
                   ),
                 ),
+                if (_showBiometricOption) ...[
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: context.colors.border)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'or',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.colors.inkMuted,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: context.colors.border)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: OutlinedButton.icon(
+                      onPressed: _isSubmitting ? null : _handleBiometricLogin,
+                      icon: Icon(Icons.fingerprint, color: context.colors.accent),
+                      label: Text(
+                        'Sign in with fingerprint',
+                        style: TextStyle(color: context.colors.accent),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: context.colors.accent),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(

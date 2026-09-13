@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/rider.dart';
 import '../services/api_service.dart';
+import '../services/biometric_auth_service.dart';
 import 'change_password_screen.dart';
 import 'help_screen.dart';
 import 'login_screen.dart';
@@ -18,7 +19,13 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late Future<Rider> _riderFuture;
+  final _biometricAuth = BiometricAuthService();
   bool _persistSession = true;
+  bool _biometricUnlock = false;
+  // Null while checking; only ever shows the toggle once this is true --
+  // a device with no fingerprint/face enrolled never sees an option that
+  // would only ever fail.
+  bool _biometricAvailable = false;
 
   @override
   void initState() {
@@ -27,6 +34,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
     widget.apiService.getPersistSessionPreference().then((value) {
       if (mounted) setState(() => _persistSession = value);
     });
+    _biometricAuth.isAvailable().then((available) {
+      if (!mounted) return;
+      setState(() => _biometricAvailable = available);
+      if (available) {
+        widget.apiService.getBiometricUnlockPreference().then((value) {
+          if (mounted) setState(() => _biometricUnlock = value);
+        });
+      }
+    });
+  }
+
+  Future<void> _toggleBiometricUnlock(bool enabled) async {
+    // Confirms the device can actually authenticate right now before the
+    // toggle commits to "on" -- otherwise a rider could enable this, the
+    // prompt fails for an unrelated reason, and the very next launch locks
+    // them out of an app they just successfully opened.
+    if (enabled) {
+      final confirmed = await _biometricAuth.authenticate();
+      if (!confirmed) return;
+    }
+    setState(() => _biometricUnlock = enabled);
+    await widget.apiService.setBiometricUnlockPreference(enabled);
   }
 
   String _initials(String name) {
@@ -220,6 +249,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
           ),
+          if (_biometricAvailable)
+            SwitchListTile(
+              value: _biometricUnlock,
+              onChanged: _toggleBiometricUnlock,
+              activeThumbColor: context.colors.accent,
+              title: const Text(
+                'Require fingerprint to unlock',
+                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
+              ),
+              subtitle: Text(
+                'Confirm it\'s you before the app opens',
+                style: TextStyle(fontSize: 11.5, color: context.colors.inkMuted),
+              ),
+            ),
           const _SectionLabel('Support'),
           ListTile(
             leading: Icon(
