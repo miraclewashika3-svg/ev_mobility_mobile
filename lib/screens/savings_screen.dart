@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/bike.dart';
 import '../models/savings_summary.dart';
 import '../services/api_service.dart';
+import '../services/data_refresh_signal.dart';
 import 'settings_screen.dart';
 import '../theme/app_colors.dart';
 
@@ -24,12 +25,23 @@ class _SavingsScreenState extends State<SavingsScreen> {
   void initState() {
     super.initState();
     _bikesFuture = widget.apiService.getBikes();
+    // Covers the gap pull-to-refresh alone leaves: a swap logged from the
+    // Stations tab while this screen sits inactive behind HomeScreen's
+    // IndexedStack, with nothing prompting the rider to manually refresh.
+    dataRefreshSignal.addListener(_handleRefresh);
+  }
+
+  @override
+  void dispose() {
+    dataRefreshSignal.removeListener(_handleRefresh);
+    super.dispose();
   }
 
   // Bikes and their savings summaries are cached in this screen's state and
   // kept alive across tab switches (see HomeScreen), so a swap logged from
   // the Stations tab wouldn't otherwise show up here without a full app
-  // restart. Pull-to-refresh re-fetches everything on demand instead.
+  // restart. Pull-to-refresh re-fetches everything on demand, and so does
+  // dataRefreshSignal firing while this screen is inactive.
   Future<void> _handleRefresh() async {
     setState(() {
       _bikesFuture = widget.apiService.getBikes();

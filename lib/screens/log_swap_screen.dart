@@ -3,6 +3,7 @@ import '../models/bike.dart';
 import '../models/payment.dart';
 import '../models/station.dart';
 import '../services/api_service.dart';
+import '../services/data_refresh_signal.dart';
 import 'add_bike_screen.dart';
 import '../theme/app_colors.dart';
 
@@ -65,6 +66,14 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
         actualCostKes: cost,
         entryDate: now,
       );
+
+      // My Bike and Savings each cache their own fetched data so switching
+      // tabs doesn't re-hit the API — but that means neither one otherwise
+      // finds out about a swap just logged from this (Stations tab) screen
+      // until the rider manually pulls to refresh. Bumping this tells both
+      // to refetch even while sitting inactive behind HomeScreen's
+      // IndexedStack.
+      dataRefreshSignal.notifyChanged();
 
       if (!mounted) return;
       Navigator.pop(context, true);
