@@ -7,13 +7,6 @@ import '../services/data_refresh_signal.dart';
 import 'add_bike_screen.dart';
 import '../theme/app_colors.dart';
 
-// The real-world ~2.4x purchase-price/running-cost gap the seeded demo data
-// uses (see DatabaseSeeder) — applied here too, so a swap logged live from
-// the app produces a savings figure consistent with the seeded history it
-// sits alongside, rather than an arbitrarily different one.
-const double _petrolEquivalentMultiplier = 2.4;
-const double _freeSwapPetrolEquivalentKes = 430;
-
 class LogSwapScreen extends StatefulWidget {
   final ApiService apiService;
   final Station station;
@@ -47,25 +40,19 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
       _errorMessage = null;
     });
 
-    final now = DateTime.now();
-    final cost = widget.payment.amountKes;
-    final petrolEquivalent = cost > 0
-        ? double.parse((cost * _petrolEquivalentMultiplier).toStringAsFixed(2))
-        : _freeSwapPetrolEquivalentKes;
-
     try {
-      await widget.apiService.createSwapLog(
+      // The backend derives both the actual cost and the petrol-equivalent
+      // figure itself from this swap log's own (payment-verified) cost --
+      // this app no longer computes or sends them, so there's nothing here
+      // for a tampered client to fabricate. See
+      // CostEntryController::store's comment for why that matters.
+      final swapLog = await widget.apiService.createSwapLog(
         bikeId: bike.id,
         stationId: widget.station.id,
         paymentId: widget.payment.id,
-        swappedAt: now,
+        swappedAt: DateTime.now(),
       );
-      await widget.apiService.createCostEntry(
-        bikeId: bike.id,
-        petrolEquivalentKes: petrolEquivalent,
-        actualCostKes: cost,
-        entryDate: now,
-      );
+      await widget.apiService.createCostEntry(swapLogId: swapLog.id);
 
       // My Bike and Savings each cache their own fetched data so switching
       // tabs doesn't re-hit the API — but that means neither one otherwise

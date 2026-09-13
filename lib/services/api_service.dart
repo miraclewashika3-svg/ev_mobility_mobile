@@ -460,22 +460,18 @@ class ApiService {
   // Records the savings comparison for a swap — what it actually cost versus
   // what the same trip would have cost on petrol. Called right after
   // createSwapLog so every logged swap immediately counts toward Savings.
-  Future<void> createCostEntry({
-    required int bikeId,
-    required double petrolEquivalentKes,
-    required double actualCostKes,
-    required DateTime entryDate,
-  }) async {
+  //
+  // Only the swap log's id is sent -- the backend derives both amounts
+  // itself from that swap log's own (already-payment-verified) cost_kes,
+  // rather than trusting client-supplied numbers. This app used to compute
+  // and send petrol_equivalent_kes/actual_cost_kes directly, which meant
+  // nothing stopped a client from submitting fabricated figures; see
+  // CostEntryController::store on the backend for the fix.
+  Future<void> createCostEntry({required int swapLogId}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/cost-entries'),
       headers: _headers,
-      body: jsonEncode({
-        'bike_id': bikeId,
-        'petrol_equivalent_kes': petrolEquivalentKes,
-        'actual_cost_kes': actualCostKes,
-        'entry_date':
-            '${entryDate.year.toString().padLeft(4, '0')}-${entryDate.month.toString().padLeft(2, '0')}-${entryDate.day.toString().padLeft(2, '0')}',
-      }),
+      body: jsonEncode({'swap_log_id': swapLogId}),
     );
 
     if (response.statusCode != 201) {
