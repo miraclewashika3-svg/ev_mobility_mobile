@@ -18,43 +18,104 @@ void main() {
 // that's being removed from the tree, and the snackbar would vanish with it.
 final rootScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-// A stored session only actually unlocks the app if biometric unlock is
-// off, or it's on and the prompt succeeds -- a fingerprint gate in front
-// of the token, not a replacement for it. A rider who cancels or fails
-// the prompt lands on the normal login screen, same as having no stored
-// session at all, never a dead end: the token itself is untouched and
-// still there next launch.
+// Set true the moment a rider reaches Home, from *any* entry path --
+// automatic session restore at cold launch, a plain password login, or
+// the Login screen's own fingerprint button. Plain top-level mutable
+// state, same pattern as themeController -- not a ValueNotifier, since
+// nothing needs to rebuild in response to it, only read it at the exact
+// moment the app is backgrounded. Originally this only ever got set
+// inside _resolveStartupSession below, which meant a rider who signed in
+// manually with their password (a completely different code path that
+// never touches that future) was invisibly exempt from ever being
+// re-locked on resume -- the bug behind "it worked once via adb, never
+// through the real app."
+bool appHasEnteredHome = false;
+
+// A stored session only skips straight to Home if biometric unlock is
+// off -- when it's on, this deliberately does NOT auto-prompt. Landing on
+// Login instead (with the token already restored into apiService) lets
+// the rider choose: tap "Sign in with fingerprint" there when they're
+// ready, or type their password -- never a system dialog popping up
+// before they've asked for it.
 Future<bool> _resolveStartupSession(ApiService apiService) async {
   final hasSession = await apiService.tryRestoreSession();
   if (!hasSession) return false;
 
-  final biometricRequired = await apiService.getBiometricUnlockPreference();
-  if (!biometricRequired) return true;
-
-  return BiometricAuthService().authenticate();
+  return !(await apiService.getBiometricUnlockPreference());
 }
 
-class EvMobilityApp extends StatelessWidget {
+class EvMobilityApp extends StatefulWidget {
   const EvMobilityApp({super.key});
 
   @override
+  State<EvMobilityApp> createState() => _EvMobilityAppState();
+}
+
+// WidgetsBindingObserver, not just the FutureBuilder in build() below --
+// that alone only ever gates a genuinely fresh process, which turned out
+// to be an unreliable thing to depend on: OEM skins (MIUI confirmed here)
+// routinely keep an app's process alive across what looks, to the rider,
+// like fully closing it (swiping it away in Recents), so main() never
+// re-runs and the one-time startup check never re-fires. Real high-level
+// apps (banking, messaging) don't rely on process death either -- they
+// re-lock on every background/foreground transition instead, which is
+// what this observer does.
+class _EvMobilityAppState extends State<EvMobilityApp>
+    with WidgetsBindingObserver {
+  late final ApiService _apiService;
+  late final Future<bool> _sessionFuture;
+  final _biometricAuth = BiometricAuthService();
+
+  bool _isLocked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _apiService = ApiService();
+    _sessionFuture = _resolveStartupSession(_apiService).then((entered) {
+      if (entered) appHasEnteredHome = true;
+      return entered;
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!appHasEnteredHome) return;
+
+    if (state == AppLifecycleState.paused) {
+      // Reads the preference fresh rather than caching it -- a rider could
+      // have just turned the toggle off in Settings, and backgrounding
+      // right after should respect that immediately, not lock them out
+      // with yesterday's setting.
+      _apiService.getBiometricUnlockPreference().then((required) {
+        if (required && mounted) setState(() => _isLocked = true);
+      });
+    } else if (state == AppLifecycleState.resumed && _isLocked) {
+      _attemptUnlock();
+    }
+  }
+
+  Future<void> _attemptUnlock() async {
+    final success = await _biometricAuth.authenticate();
+    if (mounted && success) setState(() => _isLocked = false);
+    // A failed or cancelled prompt just leaves _isLocked true -- the lock
+    // screen's own retry button (or backgrounding and resuming again)
+    // gives another chance, rather than forcing a full sign-out.
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // One shared ApiService instance for the whole app's lifetime, so the
-    // auth token set at login is still there when StationFinderScreen
-    // makes its own request — not a fresh, token-less instance per screen.
-    final apiService = ApiService();
-
-    // Created exactly once per app launch, outside the ValueListenableBuilder
-    // below -- if this lived inside that builder, toggling dark mode would
-    // re-trigger the whole session-restore check (and briefly show the
-    // splash screen again) every single time, since the builder reruns on
-    // every theme change.
-    final sessionFuture = _resolveStartupSession(apiService);
-
     // themeController is a top-level singleton (see theme_controller.dart),
     // so this ValueListenableBuilder is the one place in the app that reacts
     // to the Settings toggle -- it rebuilds just the MaterialApp, not
-    // apiService or sessionFuture above, when dark mode is switched on or
+    // _apiService or _sessionFuture above, when dark mode is switched on or
     // off.
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeController,
@@ -72,14 +133,17 @@ class EvMobilityApp extends StatelessWidget {
           // for a token from a prior session before deciding which screen
           // to open on.
           home: FutureBuilder<bool>(
-            future: sessionFuture,
+            future: _sessionFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
                 return const _SessionCheckScreen();
               }
-              return snapshot.data == true
-                  ? HomeScreen(apiService: apiService)
-                  : LoginScreen(apiService: apiService);
+              if (snapshot.data != true) {
+                return LoginScreen(apiService: _apiService);
+              }
+              return _isLocked
+                  ? _LockScreen(onRetry: _attemptUnlock)
+                  : HomeScreen(apiService: _apiService);
             },
           ),
         );
@@ -129,6 +193,81 @@ class _SessionCheckScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Covers the app's content the moment it's resumed from background with
+// biometric unlock on -- shown instead of Home until the rider taps
+// Unlock and authenticate() succeeds, so a rider's swap history and
+// savings are never on screen for the split second after switching back
+// to the app. Deliberately doesn't auto-prompt on appearing -- the
+// system fingerprint dialog only ever shows after this screen's own
+// button is tapped, never on its own.
+class _LockScreen extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _LockScreen({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Scaffold(
+      backgroundColor: colors.background,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: colors.accentSurface,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.fingerprint,
+                  size: 40,
+                  color: colors.accent,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'EV Mobility is locked',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: colors.ink,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Confirm it\'s you to continue',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: colors.inkMuted),
+              ),
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: onRetry,
+                icon: Icon(Icons.fingerprint, color: colors.accent),
+                label: Text('Unlock', style: TextStyle(color: colors.accent)),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: colors.accent),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

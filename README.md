@@ -97,22 +97,29 @@ told riders, for a swap they forgot to log at the time.
 
 **Settings** shows the rider's real profile (via `GET /me`), a functional
 "Stay signed in" toggle, a dark mode toggle, a "Require fingerprint to
-unlock" toggle (only shown on a device with biometric hardware enrolled),
-Change Password, Help & support, and About. **Help & support** is a real
-FAQ grounded in this app's actual product decisions (the savings formula,
-cross-network swaps, logging a swap after the fact) plus a working
-`mailto:` contact link.
+unlock" toggle (shown on any biometric-capable device, even before
+anything's enrolled — turning it on when nothing is explains that in
+plain language and points to the phone's own Settings, since no app can
+ever enroll a fingerprint on a rider's behalf), Change Password, Help &
+support, and About. **Help & support** is a real FAQ grounded in this
+app's actual product decisions (the savings formula, cross-network swaps,
+logging a swap after the fact) plus a working `mailto:` contact link.
 
 **Biometric unlock.** A fingerprint never reaches the backend and isn't a
 new server-side auth method — it's a local gate (`local_auth`) in front
-of the session token already sitting in the platform keystore. Two entry
-points: the launch-time session restore in `main.dart` prompts
-automatically when the Settings toggle is on, and a **"Sign in with
-fingerprint"** button on the Login screen itself offers it as an explicit
-alternative to typing a password whenever a restored session is waiting
-to be confirmed. A rider without enrolled biometrics never sees either —
-this is additive, and the email/password flow is untouched. See the
-backend repo's `docs/FUTURE_CONSIDERATIONS.md` §5 for where this goes
+of the session token already sitting in the platform keystore, and every
+prompt is rider-initiated: nothing pops up on its own. Three tap-triggered
+entry points: a **"Sign in with fingerprint"** button on the Login screen
+when a restored session is waiting to be confirmed; an **"Unlock"** button
+on a lock screen shown the moment the app is resumed from the background
+with the Settings toggle on (an `AppLifecycleState` observer, not just a
+cold-launch check — MIUI in particular keeps the process alive across
+what looks, to the rider, like fully closing the app, so relying on a
+fresh process alone turned out to be unreliable); and confirming it from
+Settings when first turning the toggle on. A rider without biometric
+hardware never sees any of it — this is additive, and the email/password
+flow is untouched throughout. See the backend repo's
+`docs/FUTURE_CONSIDERATIONS.md` §5 for where this goes
 next (biometric confirmation on sensitive actions, passkeys/WebAuthn).
 
 **Scan Station.** A "tap and go" alternative to picking a station from

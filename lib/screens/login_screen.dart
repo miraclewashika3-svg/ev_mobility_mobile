@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../main.dart' show appHasEnteredHome;
 import '../services/api_service.dart';
 import '../services/biometric_auth_service.dart';
 import 'forgot_password_screen.dart';
@@ -53,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleBiometricLogin() async {
     final success = await _biometricAuth.authenticate();
     if (!success || !mounted) return;
+    appHasEnteredHome = true;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -74,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
+      appHasEnteredHome = true;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

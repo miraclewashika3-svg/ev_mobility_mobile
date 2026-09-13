@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../main.dart' show appHasEnteredHome;
 import '../models/rider.dart';
 import '../services/api_service.dart';
 import '../services/biometric_auth_service.dart';
@@ -151,6 +152,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirmed != true) return;
 
     await widget.apiService.logout();
+    // Nothing left to protect on a bare Login screen -- without this, the
+    // lifecycle observer in main.dart would still think a session is
+    // active and try to lock a screen that has no session to unlock.
+    appHasEnteredHome = false;
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
