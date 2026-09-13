@@ -70,38 +70,51 @@ class HelpScreen extends StatelessWidget {
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: context.colors.surface,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: context.colors.border),
               ),
-              child: Theme(
-                data: Theme.of(
-                  context,
-                ).copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  initiallyExpanded: entry.key == 0,
-                  iconColor: context.colors.accent,
-                  collapsedIconColor: context.colors.accent,
-                  title: Text(
-                    question,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: context.colors.ink,
-                    ),
-                  ),
-                  childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      answer,
+              // ExpansionTile's internal ListTile paints its background and
+              // tap ripple on the nearest Material ancestor -- painting the
+              // surface color directly on this Container's DecoratedBox
+              // (rather than on a Material below it) sat between the tile
+              // and that ancestor, which is exactly what Flutter's own
+              // "ListTile background color or ink splashes may be
+              // invisible" assertion warns about. clipBehavior keeps the
+              // Material's corners (and its ripple) clipped to match this
+              // container's rounded border instead of square corners
+              // peeking out or spilling past it.
+              clipBehavior: Clip.antiAlias,
+              child: Material(
+                color: context.colors.surface,
+                child: Theme(
+                  data: Theme.of(
+                    context,
+                  ).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    initiallyExpanded: entry.key == 0,
+                    iconColor: context.colors.accent,
+                    collapsedIconColor: context.colors.accent,
+                    title: Text(
+                      question,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: context.colors.inkMuted,
-                        height: 1.55,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: context.colors.ink,
                       ),
                     ),
-                  ],
+                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                    expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        answer,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.colors.inkMuted,
+                          height: 1.55,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
