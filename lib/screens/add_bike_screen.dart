@@ -25,16 +25,18 @@ class _AddBikeScreenState extends State<AddBikeScreen> {
     });
 
     try {
-      await widget.apiService.createBike(
+      final bike = await widget.apiService.createBike(
         model: _modelController.text.trim(),
         registrationNumber: _registrationController.text.trim(),
         homeNetwork: _homeNetworkController.text.trim(),
       );
 
       if (!mounted) return;
-      // Signal the caller (BikeProfileScreen) that a bike was added, so it
-      // knows to re-fetch its bike list rather than showing stale data.
-      Navigator.pop(context, true);
+      // Returns the new bike's id, not just a bool -- lets a caller with
+      // more than one bike (BikeProfileScreen, LogSwapScreen) re-fetch and
+      // jump straight to the one just added, instead of silently landing
+      // back on whichever bike happened to be selected before.
+      Navigator.pop(context, bike.id);
     } catch (error) {
       setState(() {
         _errorMessage = error.toString().replaceFirst('Exception: ', '');

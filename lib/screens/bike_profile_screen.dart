@@ -3,6 +3,7 @@ import '../models/bike.dart';
 import '../models/swap_log.dart';
 import '../services/api_service.dart';
 import '../services/data_refresh_signal.dart';
+import '../widgets/bike_selector.dart';
 import '../widgets/empty_state.dart';
 import 'add_bike_screen.dart';
 import 'settings_screen.dart';
@@ -20,6 +21,10 @@ class BikeProfileScreen extends StatefulWidget {
 class _BikeProfileScreenState extends State<BikeProfileScreen> {
   late Future<List<Bike>> _bikesFuture;
   final Map<int, Future<List<SwapLog>>> _swapLogFutures = {};
+  // Which bike's profile/history is showing, for a rider with more than
+  // one. Null until the first successful load picks a default (see
+  // _resolveSelectedBike) -- there's no bike to default to before then.
+  int? _selectedBikeId;
 
   @override
   void initState() {
@@ -38,18 +43,33 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
   }
 
   Future<void> _openAddBikeScreen() async {
-    final wasAdded = await Navigator.push<bool>(
+    final newBikeId = await Navigator.push<int>(
       context,
       MaterialPageRoute(
         builder: (_) => AddBikeScreen(apiService: widget.apiService),
       ),
     );
 
-    if (wasAdded == true && mounted) {
+    if (newBikeId != null && mounted) {
       setState(() {
         _bikesFuture = widget.apiService.getBikes();
+        // Jump straight to the bike just added rather than leaving
+        // whichever one was selected before -- the rider's attention is
+        // already on the new one.
+        _selectedBikeId = newBikeId;
       });
     }
+  }
+
+  // Bikes load in whatever order the backend returns them, and the
+  // previously-selected id may no longer be in the list (e.g. after a
+  // refresh). Falls back to the first bike rather than crashing on
+  // firstWhere's "no element" if that ever happens.
+  Bike _resolveSelectedBike(List<Bike> bikes) {
+    return bikes.firstWhere(
+      (bike) => bike.id == _selectedBikeId,
+      orElse: () => bikes.first,
+    );
   }
 
   // This screen's data is cached and kept alive across tab switches (see
@@ -110,6 +130,15 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
           ),
         ),
         actions: [
+          // Previously only reachable from the empty state, so a rider who
+          // already had one bike had no way to ever register a second --
+          // the backend has always supported it (Bike hasMany per Rider),
+          // the UI just never exposed it.
+          IconButton(
+            icon: Icon(Icons.add_circle_outline, color: context.colors.accent),
+            tooltip: 'Add another bike',
+            onPressed: _openAddBikeScreen,
+          ),
           IconButton(
             icon: Icon(Icons.settings_outlined, color: context.colors.inkMuted),
             tooltip: 'Settings',
@@ -169,11 +198,7 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
             );
           }
 
-          // Most riders have exactly one bike, so this screen focuses on
-          // that bike's profile card plus its history — if a rider ever
-          // had more than one, this still won't crash, it just shows the
-          // first bike registered to them.
-          final bike = bikes.first;
+          final bike = _resolveSelectedBike(bikes);
 
           _swapLogFutures.putIfAbsent(
             bike.id,
@@ -187,6 +212,17 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               children: [
+                // Only rendered once there's more than one bike to choose
+                // between -- a rider with the usual single bike sees
+                // exactly the same screen as before.
+                BikeSelector(
+                  bikes: bikes,
+                  selectedBikeId: bike.id,
+                  onSelected: (selected) =>
+                      setState(() => _selectedBikeId = selected.id),
+                ),
+                if (bikes.length > 1) const SizedBox(height: 16),
+
                 // Bike profile card
                 Container(
                   padding: const EdgeInsets.all(18),
