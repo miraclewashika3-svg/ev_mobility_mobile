@@ -214,8 +214,18 @@ class ApiService {
 
   // Pulls the first validation error Laravel reports (e.g. "This email is
   // already taken") rather than just its generic top-level message, so the
-  // rider sees the actual reason their input was rejected.
+  // rider sees the actual reason their input was rejected. Also special-
+  // cases a 429: the backend throttles login/register/password-reset to
+  // 5 requests/minute/IP and sends a Retry-After header with the wait, in
+  // seconds -- worth surfacing on its own rather than falling through to a
+  // generic "failed" message that reads the same as a wrong password.
   String _errorMessage(http.Response response, {required String fallback}) {
+    if (response.statusCode == 429) {
+      final retryAfter = int.tryParse(response.headers['retry-after'] ?? '');
+      return retryAfter != null && retryAfter > 0
+          ? 'Too many attempts. Try again in ${retryAfter}s.'
+          : 'Too many attempts. Wait a minute before trying again.';
+    }
     try {
       final data = jsonDecode(response.body);
       final errors = data['errors'];
