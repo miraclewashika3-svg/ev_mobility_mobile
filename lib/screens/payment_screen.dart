@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/payment.dart';
 import '../models/station.dart';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 
 // Sits between check-in and logging a swap: a rider can't log a swap
 // without a completed payment (the backend enforces this, not just this
@@ -63,14 +64,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FAF7),
+        backgroundColor: context.colors.background,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Pay for swap',
           style: TextStyle(
-            color: Color(0xFF1A2620),
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -81,8 +82,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
           future: _startFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF1B8A4A)),
+              return Center(
+                child: CircularProgressIndicator(color: context.colors.accent),
               );
             }
 
@@ -114,15 +115,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFCEED3),
+                      color: context.colors.warningSurface,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
+                    child: Text(
                       'SIMULATED PAYMENT — no real charge is made',
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF8A5A00),
+                        color: context.colors.warningDark,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -130,18 +131,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   const SizedBox(height: 20),
                   Text(
                     widget.station.stationName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A2620),
+                      color: context.colors.ink,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     widget.station.providerName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF6B786F),
+                      color: context.colors.inkMuted,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -151,25 +152,25 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFE2E8E4)),
+                      border: Border.all(color: context.colors.border),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Amount due',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF6B786F),
+                            color: context.colors.inkMuted,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'KES ${payment.amountKes.toStringAsFixed(0)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF1A2620),
+                            color: context.colors.ink,
                           ),
                         ),
                       ],
@@ -179,8 +180,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     const SizedBox(height: 16),
                     Text(
                       _confirmError!,
-                      style: const TextStyle(
-                        color: Color(0xFFB45309),
+                      style: TextStyle(
+                        color: context.colors.warning,
                         fontSize: 13,
                       ),
                     ),
@@ -193,7 +194,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ? null
                           : () => _handlePayNow(payment),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1B8A4A),
+                        backgroundColor: context.colors.accent,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(

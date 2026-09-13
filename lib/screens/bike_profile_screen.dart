@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../widgets/empty_state.dart';
 import 'add_bike_screen.dart';
 import 'settings_screen.dart';
+import '../theme/app_colors.dart';
 
 class BikeProfileScreen extends StatefulWidget {
   final ApiService apiService;
@@ -86,21 +87,21 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FAF7),
+        backgroundColor: context.colors.background,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'My bike',
           style: TextStyle(
-            color: Color(0xFF1A2620),
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Color(0xFF6B786F)),
+            icon: Icon(Icons.settings_outlined, color: context.colors.inkMuted),
             tooltip: 'Settings',
             onPressed: _openSettings,
           ),
@@ -110,14 +111,14 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
         future: _bikesFuture,
         builder: (context, bikesSnapshot) {
           if (bikesSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF1B8A4A)),
+            return Center(
+              child: CircularProgressIndicator(color: context.colors.accent),
             );
           }
 
           if (bikesSnapshot.hasError) {
             return RefreshIndicator(
-              color: const Color(0xFF1B8A4A),
+              color: context.colors.accent,
               onRefresh: _handleRefresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -139,7 +140,7 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
 
           if (bikes.isEmpty) {
             return RefreshIndicator(
-              color: const Color(0xFF1B8A4A),
+              color: context.colors.accent,
               onRefresh: _handleRefresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -170,7 +171,7 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
           );
 
           return RefreshIndicator(
-            color: const Color(0xFF1B8A4A),
+            color: context.colors.accent,
             onRefresh: _handleRefresh,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -182,7 +183,7 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8E4)),
+                    border: Border.all(color: context.colors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,12 +193,12 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEAF5EE),
+                              color: context.colors.accentSurface,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.electric_moped_outlined,
-                              color: Color(0xFF1B8A4A),
+                              color: context.colors.accent,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -207,17 +208,17 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                               children: [
                                 Text(
                                   bike.model,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1A2620),
+                                    color: context.colors.ink,
                                   ),
                                 ),
                                 Text(
                                   bike.registrationNumber,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 13,
-                                    color: Color(0xFF6B786F),
+                                    color: context.colors.inkMuted,
                                   ),
                                 ),
                               ],
@@ -225,23 +226,23 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                           ),
                         ],
                       ),
-                      const Divider(height: 24, color: Color(0xFFE2E8E4)),
+                      Divider(height: 24, color: context.colors.border),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Home network',
                             style: TextStyle(
                               fontSize: 13,
-                              color: Color(0xFF6B786F),
+                              color: context.colors.inkMuted,
                             ),
                           ),
                           Text(
                             bike.homeNetwork,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF1A2620),
+                              color: context.colors.ink,
                             ),
                           ),
                         ],
@@ -251,12 +252,12 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                 ),
 
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'Swap history',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A2620),
+                    color: context.colors.ink,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -266,22 +267,22 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                   builder: (context, logsSnapshot) {
                     if (logsSnapshot.connectionState ==
                         ConnectionState.waiting) {
-                      return const Padding(
+                      return Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         child: Center(
                           child: CircularProgressIndicator(
-                            color: Color(0xFF1B8A4A),
+                            color: context.colors.accent,
                           ),
                         ),
                       );
                     }
 
                     if (logsSnapshot.hasError) {
-                      return const Text(
+                      return Text(
                         'Could not load swap history.',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF6B786F),
+                          color: context.colors.inkMuted,
                         ),
                       );
                     }
@@ -289,11 +290,11 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                     final logs = logsSnapshot.data ?? [];
 
                     if (logs.isEmpty) {
-                      return const Text(
+                      return Text(
                         'No swaps logged yet for this bike.',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF6B786F),
+                          color: context.colors.inkMuted,
                         ),
                       );
                     }
@@ -309,34 +310,34 @@ class _BikeProfileScreenState extends State<BikeProfileScreen> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFE2E8E4)),
+                            border: Border.all(color: context.colors.border),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.battery_charging_full,
                                     size: 18,
-                                    color: Color(0xFF1B8A4A),
+                                    color: context.colors.accent,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     _formatDate(log.swappedAt),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
-                                      color: Color(0xFF1A2620),
+                                      color: context.colors.ink,
                                     ),
                                   ),
                                 ],
                               ),
                               Text(
                                 'KES ${log.costKes.toStringAsFixed(0)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFFB45309),
+                                  color: context.colors.warning,
                                 ),
                               ),
                             ],

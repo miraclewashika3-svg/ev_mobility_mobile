@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'services/api_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'theme/app_colors.dart';
+import 'theme/app_theme.dart';
+import 'theme/theme_controller.dart';
 
 void main() {
   runApp(const EvMobilityApp());
@@ -24,38 +27,46 @@ class EvMobilityApp extends StatelessWidget {
     // makes its own request — not a fresh, token-less instance per screen.
     final apiService = ApiService();
 
-    return MaterialApp(
-      scaffoldMessengerKey: rootScaffoldMessengerKey,
-      title: 'EV Mobility Platform',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF1B8A4A),
-        scaffoldBackgroundColor: const Color(0xFFF7FAF7),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-            borderSide: const BorderSide(color: Color(0xFFE2E8E4)),
+    // Created exactly once per app launch, outside the ValueListenableBuilder
+    // below -- if this lived inside that builder, toggling dark mode would
+    // re-trigger the whole session-restore check (and briefly show the
+    // splash screen again) every single time, since the builder reruns on
+    // every theme change.
+    final sessionFuture = apiService.tryRestoreSession();
+
+    // themeController is a top-level singleton (see theme_controller.dart),
+    // so this ValueListenableBuilder is the one place in the app that reacts
+    // to the Settings toggle -- it rebuilds just the MaterialApp, not
+    // apiService or sessionFuture above, when dark mode is switched on or
+    // off.
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeController,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          scaffoldMessengerKey: rootScaffoldMessengerKey,
+          title: 'EV Mobility Platform',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: mode,
+          // A rider who signed in previously shouldn't have to do it again
+          // just because the app was closed or Android killed it in the
+          // background — tryRestoreSession() checks the platform keystore
+          // for a token from a prior session before deciding which screen
+          // to open on.
+          home: FutureBuilder<bool>(
+            future: sessionFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const _SessionCheckScreen();
+              }
+              return snapshot.data == true
+                  ? HomeScreen(apiService: apiService)
+                  : LoginScreen(apiService: apiService);
+            },
           ),
-        ),
-      ),
-      // A rider who signed in previously shouldn't have to do it again just
-      // because the app was closed or Android killed it in the background —
-      // tryRestoreSession() checks the platform keystore for a token from a
-      // prior session before deciding which screen to open on.
-      home: FutureBuilder<bool>(
-        future: apiService.tryRestoreSession(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const _SessionCheckScreen();
-          }
-          return snapshot.data == true
-              ? HomeScreen(apiService: apiService)
-              : LoginScreen(apiService: apiService);
-        },
-      ),
+        );
+      },
     );
   }
 }
@@ -69,8 +80,9 @@ class _SessionCheckScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: colors.background,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -78,25 +90,25 @@ class _SessionCheckScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF1B8A4A)),
+                border: Border.all(color: colors.accent),
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text(
+              child: Text(
                 'EV',
                 style: TextStyle(
-                  color: Color(0xFF1B8A4A),
+                  color: colors.accent,
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            const SizedBox(
+            SizedBox(
               width: 22,
               height: 22,
               child: CircularProgressIndicator(
                 strokeWidth: 2.4,
-                color: Color(0xFF1B8A4A),
+                color: colors.accent,
               ),
             ),
           ],

@@ -9,6 +9,7 @@ import 'log_swap_screen.dart';
 import 'payment_screen.dart';
 import 'scan_station_screen.dart';
 import 'settings_screen.dart';
+import '../theme/app_colors.dart';
 
 // Nairobi CBD — used as the map's starting center before any stations have
 // loaded, and as a sane fallback if a rider's station list is ever empty.
@@ -150,24 +151,24 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
             children: [
               Text(
                 station.stationName,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A2620),
+                  color: context.colors.ink,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 station.providerName,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF6B786F)),
+                style: TextStyle(fontSize: 13, color: context.colors.inkMuted),
               ),
               const SizedBox(height: 10),
               Text(
                 'KES ${station.swapPriceKes.toStringAsFixed(0)} / swap',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFB45309),
+                  color: context.colors.warning,
                 ),
               ),
               const SizedBox(height: 20),
@@ -179,14 +180,14 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
                         Navigator.pop(sheetContext);
                         _handleGetDirections(station);
                       },
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.directions,
-                        color: Color(0xFF1B8A4A),
+                        color: context.colors.accent,
                       ),
                       label: const Text('Get directions'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF1B8A4A),
-                        side: const BorderSide(color: Color(0xFF1B8A4A)),
+                        foregroundColor: context.colors.accent,
+                        side: BorderSide(color: context.colors.accent),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
@@ -199,7 +200,7 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
                         _openPaymentThenLogSwap(station);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1B8A4A),
+                        backgroundColor: context.colors.accent,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -224,7 +225,7 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
     );
   }
 
-  Widget _buildMapView(List<Station> stations) {
+  Widget _buildMapView(BuildContext context, List<Station> stations) {
     final center = stations.isNotEmpty
         ? LatLng(stations.first.latitude, stations.first.longitude)
         : _nairobiCenter;
@@ -248,9 +249,9 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
               height: 40,
               child: GestureDetector(
                 onTap: () => _showStationSheet(station),
-                child: const Icon(
+                child: Icon(
                   Icons.location_on,
-                  color: Color(0xFF1B8A4A),
+                  color: context.colors.accent,
                   size: 40,
                 ),
               ),
@@ -264,23 +265,23 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FAF7),
+        backgroundColor: context.colors.background,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Nearby stations',
           style: TextStyle(
-            color: Color(0xFF1A2620),
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.qr_code_scanner_outlined,
-              color: Color(0xFF1B8A4A),
+              color: context.colors.accent,
             ),
             tooltip: 'Scan station code',
             onPressed: _openScanStation,
@@ -288,13 +289,13 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
           IconButton(
             icon: Icon(
               _showMap ? Icons.view_list : Icons.map_outlined,
-              color: const Color(0xFF6B786F),
+              color: context.colors.inkMuted,
             ),
             tooltip: _showMap ? 'Show list' : 'Show map',
             onPressed: () => setState(() => _showMap = !_showMap),
           ),
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Color(0xFF6B786F)),
+            icon: Icon(Icons.settings_outlined, color: context.colors.inkMuted),
             tooltip: 'Settings',
             onPressed: _openSettings,
           ),
@@ -306,14 +307,14 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
           // Three distinct states, each with its own real UI — no blank
           // screen while loading, no silent failure on error.
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF1B8A4A)),
+            return Center(
+              child: CircularProgressIndicator(color: context.colors.accent),
             );
           }
 
           if (snapshot.hasError) {
             return RefreshIndicator(
-              color: const Color(0xFF1B8A4A),
+              color: context.colors.accent,
               onRefresh: _handleRefresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -335,17 +336,17 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
 
           if (stations.isEmpty) {
             return RefreshIndicator(
-              color: const Color(0xFF1B8A4A),
+              color: context.colors.accent,
               onRefresh: _handleRefresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
+                children: [
                   Padding(
                     padding: EdgeInsets.all(24),
                     child: Text(
                       'No stations found yet.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Color(0xFF6B786F)),
+                      style: TextStyle(color: context.colors.inkMuted),
                     ),
                   ),
                 ],
@@ -354,11 +355,11 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
           }
 
           if (_showMap) {
-            return _buildMapView(stations);
+            return _buildMapView(context, stations);
           }
 
           return RefreshIndicator(
-            color: const Color(0xFF1B8A4A),
+            color: context.colors.accent,
             onRefresh: _handleRefresh,
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -377,7 +378,7 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFE2E8E4)),
+                        border: Border.all(color: context.colors.border),
                       ),
                       child: Row(
                         children: [
@@ -387,43 +388,43 @@ class _StationFinderScreenState extends State<StationFinderScreen> {
                               children: [
                                 Text(
                                   station.stationName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1A2620),
+                                    color: context.colors.ink,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   station.providerName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 13,
-                                    color: Color(0xFF6B786F),
+                                    color: context.colors.inkMuted,
                                   ),
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
                                   'KES ${station.swapPriceKes.toStringAsFixed(0)} / swap',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFFB45309),
+                                    color: context.colors.warning,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.directions,
-                              color: Color(0xFF1B8A4A),
+                              color: context.colors.accent,
                             ),
                             tooltip: 'Get directions',
                             onPressed: () => _handleGetDirections(station),
                           ),
-                          const Icon(
+                          Icon(
                             Icons.chevron_right,
-                            color: Color(0xFF6B786F),
+                            color: context.colors.inkMuted,
                           ),
                         ],
                       ),

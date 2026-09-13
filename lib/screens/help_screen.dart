@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../theme/app_colors.dart';
 
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
@@ -48,14 +49,14 @@ class HelpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FAF7),
+        backgroundColor: context.colors.background,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Help & support',
           style: TextStyle(
-            color: Color(0xFF1A2620),
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -71,7 +72,7 @@ class HelpScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE2E8E4)),
+                border: Border.all(color: context.colors.border),
               ),
               child: Theme(
                 data: Theme.of(
@@ -79,14 +80,14 @@ class HelpScreen extends StatelessWidget {
                 ).copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   initiallyExpanded: entry.key == 0,
-                  iconColor: const Color(0xFF1B8A4A),
-                  collapsedIconColor: const Color(0xFF1B8A4A),
+                  iconColor: context.colors.accent,
+                  collapsedIconColor: context.colors.accent,
                   title: Text(
                     question,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF14251A),
+                      color: context.colors.ink,
                     ),
                   ),
                   childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
@@ -94,9 +95,9 @@ class HelpScreen extends StatelessWidget {
                   children: [
                     Text(
                       answer,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF5B6660),
+                        color: context.colors.inkMuted,
                         height: 1.55,
                       ),
                     ),
@@ -112,7 +113,7 @@ class HelpScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF1B8A4A),
+                color: context.colors.accent,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(

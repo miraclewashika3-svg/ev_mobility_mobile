@@ -3,6 +3,7 @@ import '../models/bike.dart';
 import '../models/savings_summary.dart';
 import '../services/api_service.dart';
 import 'settings_screen.dart';
+import '../theme/app_colors.dart';
 
 class SavingsScreen extends StatefulWidget {
   final ApiService apiService;
@@ -62,21 +63,21 @@ class _SavingsScreenState extends State<SavingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FAF7),
+        backgroundColor: context.colors.background,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Your savings',
           style: TextStyle(
-            color: Color(0xFF1A2620),
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Color(0xFF6B786F)),
+            icon: Icon(Icons.settings_outlined, color: context.colors.inkMuted),
             tooltip: 'Settings',
             onPressed: _openSettings,
           ),
@@ -86,14 +87,14 @@ class _SavingsScreenState extends State<SavingsScreen> {
         future: _bikesFuture,
         builder: (context, bikesSnapshot) {
           if (bikesSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF1B8A4A)),
+            return Center(
+              child: CircularProgressIndicator(color: context.colors.accent),
             );
           }
 
           if (bikesSnapshot.hasError) {
             return RefreshIndicator(
-              color: const Color(0xFF1B8A4A),
+              color: context.colors.accent,
               onRefresh: _handleRefresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -115,17 +116,17 @@ class _SavingsScreenState extends State<SavingsScreen> {
 
           if (bikes.isEmpty) {
             return RefreshIndicator(
-              color: const Color(0xFF1B8A4A),
+              color: context.colors.accent,
               onRefresh: _handleRefresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
+                children: [
                   Padding(
                     padding: EdgeInsets.all(24),
                     child: Text(
                       'No bikes registered yet. Savings appear once your bike has logged swaps or cost entries.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Color(0xFF6B786F)),
+                      style: TextStyle(color: context.colors.inkMuted),
                     ),
                   ),
                 ],
@@ -134,7 +135,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
           }
 
           return RefreshIndicator(
-            color: const Color(0xFF1B8A4A),
+            color: context.colors.accent,
             onRefresh: _handleRefresh,
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -156,24 +157,24 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8E4)),
+                    border: Border.all(color: context.colors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         bike.model,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A2620),
+                          color: context.colors.ink,
                         ),
                       ),
                       Text(
                         '${bike.registrationNumber} · ${bike.homeNetwork}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF6B786F),
+                          color: context.colors.inkMuted,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -182,21 +183,21 @@ class _SavingsScreenState extends State<SavingsScreen> {
                         builder: (context, summarySnapshot) {
                           if (summarySnapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return const Padding(
+                            return Padding(
                               padding: EdgeInsets.symmetric(vertical: 8),
                               child: LinearProgressIndicator(
-                                color: Color(0xFF1B8A4A),
+                                color: context.colors.accent,
                               ),
                             );
                           }
 
                           if (summarySnapshot.hasError ||
                               !summarySnapshot.hasData) {
-                            return const Text(
+                            return Text(
                               'No cost entries logged yet for this bike.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFF6B786F),
+                                color: context.colors.inkMuted,
                               ),
                             );
                           }
@@ -216,9 +217,9 @@ class _SavingsScreenState extends State<SavingsScreen> {
                                 value:
                                     'KES ${_formatKes(summary.totalActualCostKes)}',
                               ),
-                              const Divider(
+                              Divider(
                                 height: 20,
-                                color: Color(0xFFE2E8E4),
+                                color: context.colors.border,
                               ),
                               _SavingsRow(
                                 label: 'Total saved',
@@ -265,7 +266,7 @@ class _SavingsRow extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: isHighlighted ? 13 : 12,
-            color: const Color(0xFF6B786F),
+            color: context.colors.inkMuted,
             fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -275,8 +276,8 @@ class _SavingsRow extends StatelessWidget {
             fontSize: isHighlighted ? 15 : 12,
             fontWeight: FontWeight.w600,
             color: isHighlighted
-                ? const Color(0xFFB45309)
-                : const Color(0xFF1A2620),
+                ? context.colors.warning
+                : context.colors.ink,
           ),
         ),
       ],

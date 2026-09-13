@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import 'forgot_password_screen.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
+import '../theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   final ApiService apiService;
@@ -54,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -69,31 +70,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFF1B8A4A)),
+                    border: Border.all(color: context.colors.accent),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text(
+                  child: Text(
                     'EV',
                     style: TextStyle(
-                      color: Color(0xFF1B8A4A),
+                      color: context.colors.accent,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),
                   ),
                 ),
                 const SizedBox(height: 28),
-                const Text(
+                Text(
                   'Welcome back',
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A2620),
+                    color: context.colors.ink,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'Sign in to find your nearest swap station.',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF6B786F)),
+                  style: TextStyle(fontSize: 14, color: context.colors.inkMuted),
                 ),
                 const SizedBox(height: 28),
                 TextField(
@@ -122,9 +123,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                    child: const Text(
+                    child: Text(
                       'Forgot password?',
-                      style: TextStyle(color: Color(0xFF1B8A4A), fontSize: 13),
+                      style: TextStyle(color: context.colors.accent, fontSize: 13),
                     ),
                   ),
                 ),
@@ -132,8 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(
-                      color: Color(0xFFB45309),
+                    style: TextStyle(
+                      color: context.colors.warning,
                       fontSize: 13,
                     ),
                   ),
@@ -144,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1B8A4A),
+                      backgroundColor: context.colors.accent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -166,9 +167,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   RegisterScreen(apiService: widget.apiService),
                             ),
                           ),
-                    child: const Text(
+                    child: Text(
                       "Don't have an account? Create one",
-                      style: TextStyle(color: Color(0xFF1B8A4A), fontSize: 13),
+                      style: TextStyle(color: context.colors.accent, fontSize: 13),
                     ),
                   ),
                 ),

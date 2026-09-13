@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'reset_password_screen.dart';
+import '../theme/app_colors.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   final ApiService apiService;
@@ -55,7 +56,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -64,18 +65,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Reset your password',
                   style: TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A2620),
+                    color: context.colors.ink,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   "Enter your email and we'll send you a reset code.",
-                  style: TextStyle(fontSize: 14, color: Color(0xFF6B786F)),
+                  style: TextStyle(fontSize: 14, color: context.colors.inkMuted),
                 ),
                 const SizedBox(height: 28),
                 TextField(
@@ -87,8 +88,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   const SizedBox(height: 12),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(
-                      color: Color(0xFFB45309),
+                    style: TextStyle(
+                      color: context.colors.warning,
                       fontSize: 13,
                     ),
                   ),
@@ -99,7 +100,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _handleRequestCode,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1B8A4A),
+                      backgroundColor: context.colors.accent,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -115,9 +116,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onPressed: _isSubmitting
                         ? null
                         : () => Navigator.pop(context),
-                    child: const Text(
+                    child: Text(
                       'Back to sign in',
-                      style: TextStyle(color: Color(0xFF1B8A4A), fontSize: 13),
+                      style: TextStyle(color: context.colors.accent, fontSize: 13),
                     ),
                   ),
                 ),

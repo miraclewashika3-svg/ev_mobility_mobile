@@ -3,6 +3,8 @@ import '../models/rider.dart';
 import '../services/api_service.dart';
 import 'help_screen.dart';
 import 'login_screen.dart';
+import '../theme/app_colors.dart';
+import '../theme/theme_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ApiService apiService;
@@ -79,9 +81,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
+            child: Text(
               'Sign out',
-              style: TextStyle(color: Color(0xFFB4392C)),
+              style: TextStyle(color: context.colors.danger),
             ),
           ),
         ],
@@ -104,14 +106,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FAF7),
+        backgroundColor: context.colors.background,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Settings',
           style: TextStyle(
-            color: Color(0xFF1A2620),
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -129,11 +131,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     CircleAvatar(
                       radius: 23,
-                      backgroundColor: const Color(0xFFE1F3EA),
+                      backgroundColor: context.colors.accentSurface,
                       child: Text(
                         rider != null ? _initials(rider.name) : '…',
-                        style: const TextStyle(
-                          color: Color(0xFF1B8A4A),
+                        style: TextStyle(
+                          color: context.colors.accent,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -145,17 +147,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         children: [
                           Text(
                             rider?.name ?? 'Loading…',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14.5,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF14251A),
+                              color: context.colors.ink,
                             ),
                           ),
                           Text(
                             rider?.email ?? '',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF5B6660),
+                              color: context.colors.inkMuted,
                             ),
                           ),
                         ],
@@ -170,55 +172,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SwitchListTile(
             value: _persistSession,
             onChanged: _togglePersistSession,
-            activeThumbColor: const Color(0xFF1B8A4A),
+            activeThumbColor: context.colors.accent,
             title: const Text(
               'Stay signed in',
               style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'Skip sign-in the next time you open the app',
-              style: TextStyle(fontSize: 11.5, color: Color(0xFF8A9490)),
+              style: TextStyle(fontSize: 11.5, color: context.colors.inkMuted),
             ),
+          ),
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: themeController,
+            builder: (context, mode, _) {
+              return SwitchListTile(
+                value: mode == ThemeMode.dark,
+                onChanged: themeController.setDark,
+                activeThumbColor: context.colors.accent,
+                title: const Text(
+                  'Dark mode',
+                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
+                ),
+                subtitle: Text(
+                  'Easier on the eyes for swaps after dark',
+                  style: TextStyle(fontSize: 11.5, color: context.colors.inkMuted),
+                ),
+              );
+            },
           ),
           const _SectionLabel('Support'),
           ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.help_outline,
-              color: Color(0xFF1B8A4A),
+              color: context.colors.accent,
             ),
             title: const Text(
               'Help & support',
               style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
             ),
-            trailing: const Icon(Icons.chevron_right, color: Color(0xFFB7C0BA)),
+            trailing: Icon(Icons.chevron_right, color: context.colors.iconMuted),
             onTap: _openHelp,
           ),
           ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.info_outline,
-              color: Color(0xFF1B8A4A),
+              color: context.colors.accent,
             ),
             title: const Text(
               'About',
               style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
             ),
-            subtitle: const Text(
+            subtitle: Text(
               'v1.0.0',
-              style: TextStyle(fontSize: 11.5, color: Color(0xFF8A9490)),
+              style: TextStyle(fontSize: 11.5, color: context.colors.inkMuted),
             ),
-            trailing: const Icon(Icons.chevron_right, color: Color(0xFFB7C0BA)),
+            trailing: Icon(Icons.chevron_right, color: context.colors.iconMuted),
             onTap: _showAbout,
           ),
           const SizedBox(height: 8),
-          const Divider(height: 1, color: Color(0xFFE2E8E4)),
+          Divider(height: 1, color: context.colors.border),
           ListTile(
-            leading: const Icon(Icons.logout, color: Color(0xFFB4392C)),
-            title: const Text(
+            leading: Icon(Icons.logout, color: context.colors.danger),
+            title: Text(
               'Sign out',
               style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFFB4392C),
+                color: context.colors.danger,
               ),
             ),
             onTap: _confirmSignOut,
@@ -241,11 +261,11 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 6),
       child: Text(
         label.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10.5,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
-          color: Color(0xFF8A9490),
+          color: context.colors.inkMuted,
         ),
       ),
     );

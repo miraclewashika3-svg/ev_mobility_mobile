@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import 'station_finder_screen.dart';
 import 'savings_screen.dart';
 import 'bike_profile_screen.dart';
+import '../theme/app_colors.dart';
 
 // HomeScreen wraps all three post-login screens in a bottom tab bar, so the
 // rider can move between finding a station, checking savings, and viewing
@@ -37,8 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
-        selectedItemColor: const Color(0xFF1B8A4A),
-        unselectedItemColor: const Color(0xFF6B786F),
+        selectedItemColor: context.colors.accent,
+        unselectedItemColor: context.colors.inkMuted,
         backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
         items: const [

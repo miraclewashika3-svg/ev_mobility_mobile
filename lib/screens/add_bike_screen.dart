@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 
 class AddBikeScreen extends StatefulWidget {
   final ApiService apiService;
@@ -58,14 +59,14 @@ class _AddBikeScreenState extends State<AddBikeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FAF7),
+        backgroundColor: context.colors.background,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Add your bike',
           style: TextStyle(
-            color: Color(0xFF1A2620),
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -105,8 +106,8 @@ class _AddBikeScreenState extends State<AddBikeScreen> {
                 const SizedBox(height: 12),
                 Text(
                   _errorMessage!,
-                  style: const TextStyle(
-                    color: Color(0xFFB45309),
+                  style: TextStyle(
+                    color: context.colors.warning,
                     fontSize: 13,
                   ),
                 ),
@@ -117,7 +118,7 @@ class _AddBikeScreenState extends State<AddBikeScreen> {
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _handleSave,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1B8A4A),
+                    backgroundColor: context.colors.accent,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(

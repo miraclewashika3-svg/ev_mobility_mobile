@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import '../theme/app_colors.dart';
 
 // Every station QR code encodes this prefix + the station's numeric id --
 // e.g. "evmobility:station:3" -- so a scan can never be mistaken for some
@@ -61,7 +62,7 @@ class _ScanStationScreenState extends State<ScanStationScreen> {
             width: 240,
             height: 240,
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF1B8A4A), width: 3),
+              border: Border.all(color: context.colors.accent, width: 3),
               borderRadius: BorderRadius.circular(16),
             ),
           ),

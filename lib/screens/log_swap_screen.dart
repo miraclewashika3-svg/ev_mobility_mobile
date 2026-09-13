@@ -4,6 +4,7 @@ import '../models/payment.dart';
 import '../models/station.dart';
 import '../services/api_service.dart';
 import 'add_bike_screen.dart';
+import '../theme/app_colors.dart';
 
 // The real-world ~2.4x purchase-price/running-cost gap the seeded demo data
 // uses (see DatabaseSeeder) — applied here too, so a swap logged live from
@@ -81,14 +82,14 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF7),
+      backgroundColor: context.colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FAF7),
+        backgroundColor: context.colors.background,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Log a swap',
           style: TextStyle(
-            color: Color(0xFF1A2620),
+            color: context.colors.ink,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -99,8 +100,8 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
           future: _bikesFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF1B8A4A)),
+              return Center(
+                child: CircularProgressIndicator(color: context.colors.accent),
               );
             }
 
@@ -126,10 +127,10 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
+                      Text(
                         'Add your bike first so swaps can be logged against it.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Color(0xFF6B786F)),
+                        style: TextStyle(color: context.colors.inkMuted),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -141,7 +142,7 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1B8A4A),
+                          backgroundColor: context.colors.accent,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,
@@ -168,18 +169,18 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                 children: [
                   Text(
                     widget.station.stationName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1A2620),
+                      color: context.colors.ink,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${widget.station.providerName} · for ${bike.model} (${bike.registrationNumber})',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF6B786F),
+                      color: context.colors.inkMuted,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -187,14 +188,14 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE2F0E6),
+                      color: context.colors.accentSurface,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.check_circle,
-                          color: Color(0xFF1B8A4A),
+                          color: context.colors.accent,
                           size: 20,
                         ),
                         const SizedBox(width: 10),
@@ -204,18 +205,18 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                             children: [
                               Text(
                                 'Paid KES ${widget.payment.amountKes.toStringAsFixed(0)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF0F5C30),
+                                  color: context.colors.accentDark,
                                 ),
                               ),
                               if (widget.payment.providerReference != null)
                                 Text(
                                   'Ref ${widget.payment.providerReference}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11.5,
-                                    color: Color(0xFF4C7A56),
+                                    color: context.colors.accentMuted,
                                   ),
                                 ),
                             ],
@@ -228,8 +229,8 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                     const SizedBox(height: 12),
                     Text(
                       _errorMessage!,
-                      style: const TextStyle(
-                        color: Color(0xFFB45309),
+                      style: TextStyle(
+                        color: context.colors.warning,
                         fontSize: 13,
                       ),
                     ),
@@ -242,7 +243,7 @@ class _LogSwapScreenState extends State<LogSwapScreen> {
                           ? null
                           : () => _handleLogSwap(bike),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1B8A4A),
+                        backgroundColor: context.colors.accent,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
