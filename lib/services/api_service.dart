@@ -254,6 +254,31 @@ class ApiService {
     }
   }
 
+  // Settings screen's self-service change-password form. On success every
+  // other signed-in device for this rider is revoked server-side, but the
+  // token this request used stays valid — no re-login needed here, unlike
+  // resetPassword() above.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final response = await http.patch(
+      Uri.parse('$baseUrl/password'),
+      headers: _headers,
+      body: jsonEncode({
+        'current_password': currentPassword,
+        'password': newPassword,
+        'password_confirmation': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        _errorMessage(response, fallback: 'Could not change password'),
+      );
+    }
+  }
+
   Future<List<Station>> getStations() async {
     final response = await http.get(
       Uri.parse('$baseUrl/stations'),

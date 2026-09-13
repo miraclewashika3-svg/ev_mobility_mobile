@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/rider.dart';
 import '../services/api_service.dart';
+import 'change_password_screen.dart';
 import 'help_screen.dart';
 import 'login_screen.dart';
 import '../theme/app_colors.dart';
@@ -45,6 +46,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const HelpScreen()),
+    );
+  }
+
+  void _openChangePassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangePasswordScreen(apiService: widget.apiService),
+      ),
     );
   }
 
@@ -167,6 +177,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               );
             },
+          ),
+          const _SectionLabel('Account'),
+          ListTile(
+            leading: Icon(Icons.lock_outline, color: context.colors.accent),
+            title: const Text(
+              'Change password',
+              style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500),
+            ),
+            trailing: Icon(Icons.chevron_right, color: context.colors.iconMuted),
+            onTap: _openChangePassword,
           ),
           const _SectionLabel('Preferences'),
           SwitchListTile(
