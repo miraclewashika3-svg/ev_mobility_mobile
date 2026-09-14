@@ -35,3 +35,9 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 068302c7cbaa13913a4545dfdae39e35
           command: deploy
+          # Without this, the action falls back to installing Wrangler
+          # 3.90.0 (no package.json here for it to detect a pinned
+          # version from), and that version's assets-only deploy path
+          # demands an explicit `main` entry-point this Worker doesn't
+          # have. Matches the newer CLI already used to deploy by hand.
+          wranglerVersion: '4.131.1'
